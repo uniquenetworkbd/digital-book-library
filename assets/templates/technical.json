@@ -1,0 +1,10 @@
+{
+  "title": "নতুন টেকনিক্যাল বই",
+  "category": "Technical",
+  "chapters": [
+    { "id": "technical-preface", "title": "প্রাক-কথা ও ভূমিকা", "content": "" },
+    { "id": "technical-chapter-1", "title": "অধ্যায় ১: পরিচিতি", "content": "" },
+    { "id": "technical-chapter-2", "title": "অধ্যায় ২: মূল বিষয়", "content": "" },
+    { "id": "technical-conclusion", "title": "উপসংহার", "content": "" }
+  ]
+}
