@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Digital Book Library — browse, search and read books.">
+  <title>Digital Book Library</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">📚 Digital Book Library</a>
+      <nav aria-label="প্রধান নেভিগেশন">
+        <a href="index.html">লাইব্রেরি</a>
+        <a href="creator.html">বই লিখুন</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">Client-side Digital Library</p>
+      <h1>আপনার বইয়ের লাইব্রেরি</h1>
+      <p>বই খুঁজুন, ক্যাটাগরি দিয়ে ফিল্টার করুন এবং ব্রাউজারেই পড়ুন।</p>
+    </section>
+    <section class="library-controls" aria-label="লাইব্রেরি নিয়ন্ত্রণ">
+      <label class="search-field">🔎
+        <span class="sr-only">বই বা লেখক খুঁজুন</span>
+        <input id="searchInput" type="search" placeholder="বইয়ের নাম বা লেখকের নাম..." autocomplete="off">
+      </label>
+      <label>
+        <span class="sr-only">ক্যাটাগরি</span>
+        <select id="categoryFilter">
+          <option value="all">সব ক্যাটাগরি</option>
+          <option value="Literature">Literature</option>
+          <option value="Technical">Technical</option>
+          <option value="Novel">Novel</option>
+        </select>
+      </label>
+    </section>
+    <p id="catalogStatus" class="status" role="status">ক্যাটালগ লোড হচ্ছে...</p>
+    <section id="bookGrid" class="book-grid" aria-live="polite"></section>
+  </main>
+  <footer class="site-footer"><div class="container">GitHub Pages • Vanilla JavaScript • JSON • IndexedDB</div></footer>
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
