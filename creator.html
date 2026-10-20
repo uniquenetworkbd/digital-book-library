@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book Creator</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/editor.css">
+</head>
+<body>
+  <header class="site-header"><div class="container header-inner">
+    <a class="brand" href="index.html">← লাইব্রেরি</a>
+    <div class="editor-status"><span id="saveStatus">Saved locally</span></div>
+  </div></header>
+  <main class="creator-shell container">
+    <section class="creator-toolbar">
+      <div><p class="eyebrow">Book Authoring</p><h1>নতুন বই তৈরি করুন</h1></div>
+      <div class="toolbar-actions">
+        <button id="exportButton" type="button">Export Book</button>
+        <button id="publishButton" type="button" class="primary">Publish to Library</button>
+      </div>
+    </section>
+    <section class="metadata-grid">
+      <label>বইয়ের নাম<input id="bookTitle" type="text" placeholder="নতুন বই"></label>
+      <label>লেখক<input id="bookAuthor" type="text" placeholder="লেখকের নাম"></label>
+      <label>ক্যাটাগরি<select id="bookCategory"><option value="Novel">Novel</option><option value="Technical">Technical</option><option value="Research">Research</option></select></label>
+    </section>
+    <div id="publisherPanel" class="publisher-panel" hidden>
+      <h2>Publish Settings</h2>
+      <p>প্রকাশের JSON ও GitHub commit নির্দেশিকা তৈরি করতে তথ্য দিন।</p>
+      <label>Repository owner<input id="repoOwner" type="text" placeholder="GitHub username"></label>
+      <label>Repository name<input id="repoName" type="text" value="digital-book-library"></label>
+      <label>GitHub Personal Access Token<input id="githubToken" type="password" autocomplete="off" placeholder="ঐচ্ছিক; ব্রাউজারে সংরক্ষণ করা হবে না"></label>
+    </div>
+    <div class="editor-layout">
+      <aside class="chapter-panel">
+        <div class="panel-heading"><h2>চ্যাপ্টার</h2><button id="addChapter" type="button">+ যোগ</button></div>
+        <ol id="chapterList" class="chapter-list"></ol>
+      </aside>
+      <section class="writing-panel">
+        <div class="format-toolbar" aria-label="ফরম্যাটিং">
+          <button type="button" data-format="paragraph">¶</button>
+          <button type="button" data-format="heading">H</button>
+          <button type="button" data-format="bold"><strong>B</strong></button>
+          <button type="button" data-format="italic"><em>I</em></button>
+          <button type="button" data-format="code">&lt;/&gt;</button>
+        </div>
+        <label class="sr-only" for="chapterTitle">অধ্যায়ের নাম</label>
+        <input id="chapterTitle" class="chapter-title-input" type="text" placeholder="অধ্যায়ের নাম">
+        <textarea id="chapterContent" class="writing-area" placeholder="এখানে লিখুন..."></textarea>
+      </section>
+      <aside class="preview-panel">
+        <div class="panel-heading"><h2>Live Preview</h2></div>
+        <article id="livePreview" class="preview-content"></article>
+      </aside>
+    </div>
+    <section id="publishOutput" class="publish-output" hidden></section>
+  </main>
+  <script type="module" src="assets/js/editor.js"></script>
+</body>
+</html>
