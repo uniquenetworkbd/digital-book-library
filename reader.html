@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book Reader</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/reader.css">
+</head>
+<body>
+  <header class="site-header"><div class="container header-inner">
+    <a class="brand" href="index.html">← লাইব্রেরি</a>
+    <div class="reader-tools" aria-label="রিডার নিয়ন্ত্রণ">
+      <button id="fontDecrease" type="button" title="ফন্ট ছোট">A−</button>
+      <button id="fontIncrease" type="button" title="ফন্ট বড়">A+</button>
+      <button id="fontToggle" type="button">ফন্ট</button>
+      <button id="nightToggle" type="button">🌙 নাইট</button>
+    </div>
+  </div></header>
+  <main class="reader-layout container">
+    <aside class="toc" aria-label="সূচিপত্র">
+      <h2>সূচিপত্র</h2>
+      <nav id="tocList"></nav>
+    </aside>
+    <article class="reader-main">
+      <header class="book-header">
+        <p id="bookCategory" class="eyebrow"></p>
+        <h1 id="bookTitle">বই লোড হচ্ছে...</h1>
+        <p id="bookAuthor"></p>
+      </header>
+      <p id="readerStatus" class="status" role="status"></p>
+      <section id="chapterContent" class="chapter-content"></section>
+      <nav class="chapter-nav" aria-label="অধ্যায় নেভিগেশন">
+        <button id="previousChapter" type="button">← পূর্ববর্তী অধ্যায়</button>
+        <button id="nextChapter" type="button">পরবর্তী অধ্যায় →</button>
+      </nav>
+    </article>
+  </main>
+  <script type="module" src="assets/js/reader.js"></script>
+</body>
+</html>
