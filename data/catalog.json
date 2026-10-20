@@ -1,0 +1,20 @@
+[
+  {
+    "id": "book-001",
+    "title": "বাংলা সাহিত্যের ইতিহাস",
+    "author": "রাফসান জামিল",
+    "category": "Literature",
+    "coverImage": "",
+    "filePath": "data/books/book-001.json",
+    "publishDate": "2026-10-21"
+  },
+  {
+    "id": "book-002",
+    "title": "ডেটা স্ট্রাকচার ও অ্যালগরিদম",
+    "author": "টেক টিম",
+    "category": "Technical",
+    "coverImage": "",
+    "filePath": "data/books/book-002.json",
+    "publishDate": "2026-10-21"
+  }
+]
