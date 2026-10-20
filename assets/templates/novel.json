@@ -1,0 +1,10 @@
+{
+  "title": "নতুন উপন্যাস",
+  "category": "Novel",
+  "chapters": [
+    { "id": "novel-preface", "title": "প্রাক-কথা", "content": "" },
+    { "id": "novel-chapter-1", "title": "অধ্যায় ১", "content": "" },
+    { "id": "novel-chapter-2", "title": "অধ্যায় ২", "content": "" },
+    { "id": "novel-conclusion", "title": "উপসংহার", "content": "" }
+  ]
+}
