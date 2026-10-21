@@ -1,0 +1,37 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "worker": true,
+    "serviceworker": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "globals": {
+    "CompleteBotEngine": "readonly",
+    "V2BackupEngine": "readonly",
+    "uiEngine": "writable",
+    "aiEngine": "writable",
+    "ttsEngine": "writable",
+    "backupEngine": "writable",
+    "completeBotEngine": "writable"
+  },
+  "overrides": [
+    {
+      "files": ["assets/js/db.js"],
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    }
+  ],
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": ["warn", { "allow": ["warn", "error", "info"] }],
+    "no-undef": "error",
+    "semi": ["error", "always"],
+    "quotes": ["error", "single", { "avoidEscape": true }]
+  }
+}
