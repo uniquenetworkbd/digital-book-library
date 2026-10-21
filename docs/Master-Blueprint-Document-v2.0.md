@@ -18,4 +18,75 @@
 
 ## ২. কমপ্লিট ফোল্ডার ও ফাইল স্ট্রাকচার (v2.0 Architectural Map)
 
-নতুন ফিচারসমূহ (PWA, Dashboard, Backup Engine, Bot Assets) সংযুক্ত করার পর প্রজেক্টের সম্পূর্ণ গঠন নিচে দেখানো হলো:
+নতুন ফিচারসমূহ (PWA, Dashboard, Backup Engine, Bot Assets) সংযুক্ত করার পর V2-এর মূল modular source architecture নিচের structure অনুসরণ করবে। বর্তমান V1 runtime (`assets/js/`) এই structural phase-এ অক্ষত রাখা হয়েছে; V2 modules ধাপে ধাপে migrate/wire করা হবে, যাতে চলমান application ভেঙে না যায়।
+
+```text
+digital-book-library/
+├── index.html                         # হোম পেজ / লাইব্রেরি
+├── reader.html                        # রিডার shell
+├── creator.html                       # Book Creator shell
+├── manifest.json                      # PWA Web App Manifest
+├── sw.js                              # Service Worker / offline foundation
+├── README.md                          # Master project documentation
+│
+├── assets/
+│   ├── css/
+│   │   ├── main.css                   # Global UI
+│   │   ├── reader.css                 # Reader UI / typography
+│   │   └── editor.css                 # Creator / editor UI
+│   ├── images/
+│   │   ├── logo.svg                   # Library logo
+│   │   └── default-cover.png          # Default book cover
+│   ├── js/                             # Existing V1 runtime; migration source
+│   │   ├── app.js
+│   │   ├── reader.js
+│   │   ├── editor.js
+│   │   └── db.js
+│   └── templates/
+│       ├── novel.json
+│       ├── technical.json
+│       └── research.json
+│
+├── src/                                # V2 ES6 modular source architecture
+│   ├── app.js                          # Main initialization / application shell
+│   ├── database/
+│   │   ├── db.js                       # IndexedDB setup
+│   │   └── StorageManager.js           # Draft / local-storage management
+│   ├── modules/
+│   │   ├── library/
+│   │   │   ├── LibraryController.js    # Search/filter/sort controller
+│   │   │   └── LibraryView.js           # Library rendering
+│   │   ├── reader/
+│   │   │   ├── ReaderController.js     # Reader state/navigation
+│   │   │   └── ReaderView.js            # Reader presentation
+│   │   └── editor/
+│   │       ├── EditorController.js     # Editor state/input/autosave
+│   │       ├── TemplateEngine.js        # Template loading
+│   │       └── EditorView.js            # Editor presentation
+│   └── utils/
+│       ├── Exporter.js                  # Export pipeline
+│       └── GithubPublisher.js           # Publishing integration
+│
+├── data/
+│   ├── catalog.json                     # Library catalog metadata
+│   ├── books/                           # Existing V1 book data
+│   │   ├── book-001.json
+│   │   └── book-002.json
+│   └── published/                       # V2 published-book target
+│
+└── docs/
+    ├── Master-Blueprint-Document-v2.0.md
+    └── v2-architectural-map.md          # Structural migration notes
+```
+
+### Structural implementation status
+
+- `manifest.json` — V2 PWA foundation added.
+- `sw.js` — V2 service-worker foundation added.
+- `assets/images/logo.svg` — V2 image asset added.
+- `assets/templates/research.json` — Research template added.
+- `data/published/` — V2 published-book directory scaffold added.
+- `src/` — V2 modular source architecture scaffold added.
+- Existing V1 `assets/js/` runtime remains intact until each V2 module is implemented and verified.
+
+> **Important:** Dashboard, Backup Engine, Bot, AI and other V2 feature modules are architectural targets of this Master Blueprint. Their final source filenames and contracts will be added when their respective feature specifications are implemented; they are not fabricated as completed modules merely by creating empty files.
