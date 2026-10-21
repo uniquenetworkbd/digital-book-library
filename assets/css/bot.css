@@ -1,0 +1,7 @@
+/* Digital Book Library v2.0 — Bot UI scaffold.
+ * Feature implementation remains modular and can be added without changing V1 styles.
+ */
+.bot-widget,
+.bot-message {
+  box-sizing: border-box;
+}
