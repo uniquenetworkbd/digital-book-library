@@ -1,0 +1,12 @@
+{
+  "name": "Research",
+  "category": "Research",
+  "chapters": [
+    {"id":"abstract","title":"Abstract","content":""},
+    {"id":"introduction","title":"Introduction","content":""},
+    {"id":"methodology","title":"Methodology","content":""},
+    {"id":"results","title":"Results","content":""},
+    {"id":"discussion","title":"Discussion","content":""},
+    {"id":"references","title":"References","content":""}
+  ]
+}
