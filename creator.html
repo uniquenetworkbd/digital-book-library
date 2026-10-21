@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create and publish books in Digital Book Library">
+  <link rel="manifest" href="manifest.json">
   <title>Book Creator</title>
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/editor.css">
+  <link rel="stylesheet" href="assets/css/bot.css">
 </head>
 <body>
   <header class="site-header"><div class="container header-inner">
@@ -48,6 +51,10 @@
         <label class="sr-only" for="chapterTitle">অধ্যায়ের নাম</label>
         <input id="chapterTitle" class="chapter-title-input" type="text" placeholder="অধ্যায়ের নাম">
         <textarea id="chapterContent" class="writing-area" placeholder="এখানে লিখুন..."></textarea>
+        <div class="editor-metrics" aria-live="polite">
+          <span>Words: <strong id="live-word-count">0</strong></span>
+          <span>Characters: <strong id="live-char-count">0</strong></span>
+        </div>
       </section>
       <aside class="preview-panel">
         <div class="panel-heading"><h2>Live Preview</h2></div>
@@ -56,6 +63,14 @@
     </div>
     <section id="publishOutput" class="publish-output" hidden></section>
   </main>
+  <script src="assets/js/ui-enhancements.js"></script>
+  <script src="assets/js/ai-engine.js"></script>
+  <script src="assets/js/backup-engine.js"></script>
   <script type="module" src="assets/js/editor.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
+    }
+  </script>
 </body>
 </html>
