@@ -1,0 +1,10 @@
+{
+  "name": "Novel",
+  "category": "Novel",
+  "chapters": [
+    {"id":"preface","title":"Preface","content":""},
+    {"id":"chapter-1","title":"Chapter 1","content":""},
+    {"id":"chapter-2","title":"Chapter 2","content":""},
+    {"id":"conclusion","title":"Conclusion","content":""}
+  ]
+}
