@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Digital Book Library — browse, search and read books.">
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#18202a">
   <title>Digital Book Library</title>
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/bot.css">
@@ -31,31 +32,9 @@
         <span class="sr-only">বই, লেখক বা ট্যাগ খুঁজুন</span>
         <input id="searchInput" type="search" placeholder="বইয়ের নাম, লেখক বা ট্যাগ..." autocomplete="off">
       </label>
-      <label>
-        <span class="sr-only">ক্যাটাগরি</span>
-        <select id="categoryFilter">
-          <option value="all">সব ক্যাটাগরি</option>
-          <option value="Literature">Literature</option>
-          <option value="Technical">Technical</option>
-          <option value="Novel">Novel</option>
-          <option value="Research">Research</option>
-        </select>
-      </label>
-      <label>
-        <span class="sr-only">অতিরিক্ত ট্যাগ</span>
-        <input id="tagFilter" type="search" placeholder="ট্যাগ: ai, research..." autocomplete="off">
-      </label>
-      <label>
-        <span class="sr-only">সাজানোর ক্রম</span>
-        <select id="sortFilter">
-          <option value="title-asc">শিরোনাম: A→Z</option>
-          <option value="title-desc">শিরোনাম: Z→A</option>
-          <option value="date-desc">প্রকাশকাল: নতুন→পুরনো</option>
-          <option value="date-asc">প্রকাশকাল: পুরনো→নতুন</option>
-          <option value="rating-desc">রেটিং: বেশি→কম</option>
-          <option value="readingTime-asc">পড়ার সময়: কম→বেশি</option>
-        </select>
-      </label>
+      <label><span class="sr-only">ক্যাটাগরি</span><select id="categoryFilter"><option value="all">সব ক্যাটাগরি</option><option value="Literature">Literature</option><option value="Technical">Technical</option><option value="Novel">Novel</option><option value="Research">Research</option></select></label>
+      <label><span class="sr-only">অতিরিক্ত ট্যাগ</span><input id="tagFilter" type="search" placeholder="ট্যাগ: ai, research..." autocomplete="off"></label>
+      <label><span class="sr-only">সাজানোর ক্রম</span><select id="sortFilter"><option value="title-asc">শিরোনাম: A→Z</option><option value="title-desc">শিরোনাম: Z→A</option><option value="date-desc">প্রকাশকাল: নতুন→পুরনো</option><option value="date-asc">প্রকাশকাল: পুরনো→নতুন</option><option value="rating-desc">রেটিং: বেশি→কম</option><option value="readingTime-asc">পড়ার সময়: কম→বেশি</option></select></label>
     </section>
     <p id="catalogStatus" class="status" role="status">ক্যাটালগ লোড হচ্ছে...</p>
     <section id="bookGrid" class="book-grid" aria-live="polite"></section>
@@ -65,11 +44,7 @@
   <script src="assets/js/ai-engine.js"></script>
   <script src="assets/js/tts-engine.js"></script>
   <script src="assets/js/backup-engine.js"></script>
+  <script src="assets/js/pwa.js"></script>
   <script type="module" src="assets/js/app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
-    }
-  </script>
 </body>
 </html>
