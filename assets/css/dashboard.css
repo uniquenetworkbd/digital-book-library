@@ -1,0 +1,12 @@
+/* Digital Book Library v2.0 — Dashboard stylesheet scaffold. */
+.dashboard-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+.dashboard-header { margin-bottom: 1.5rem; }
+.dashboard-kicker { margin: 0 0 .25rem; opacity: .7; }
+.dashboard-grid { display: grid; gap: 1rem; }
+.dashboard-card { padding: 1rem; border: 1px solid rgba(127,127,127,.25); border-radius: 12px; }
+.dashboard-card canvas { width: 100%; max-width: 100%; height: auto; }
+.dashboard-card button { margin: .25rem; }
