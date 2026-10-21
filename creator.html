@@ -19,7 +19,8 @@
     <section class="creator-toolbar">
       <div><p class="eyebrow">Book Authoring</p><h1>নতুন বই তৈরি করুন</h1></div>
       <div class="toolbar-actions">
-        <button id="exportButton" type="button">Export Book</button>
+        <button id="exportPdfButton" type="button">Export PDF</button>
+        <button id="exportEpubButton" type="button">Export EPUB</button>
         <button id="publishButton" type="button" class="primary">Publish to Library</button>
       </div>
     </section>
@@ -27,6 +28,14 @@
       <label>বইয়ের নাম<input id="bookTitle" type="text" placeholder="নতুন বই"></label>
       <label>লেখক<input id="bookAuthor" type="text" placeholder="লেখকের নাম"></label>
       <label>ক্যাটাগরি<select id="bookCategory"><option value="Novel">Novel</option><option value="Technical">Technical</option><option value="Research">Research</option></select></label>
+    </section>
+    <section class="cover-panel">
+      <div>
+        <strong>Custom Cover</strong>
+        <p class="status">PNG/JPEG/WebP • লোকাল ব্রাউজারেই সংরক্ষিত</p>
+      </div>
+      <input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp">
+      <img id="coverPreview" class="cover-preview" alt="কাস্টম কভার প্রিভিউ" hidden>
     </section>
     <div id="publisherPanel" class="publisher-panel" hidden>
       <h2>Publish Settings</h2>
@@ -50,7 +59,7 @@
         </div>
         <label class="sr-only" for="chapterTitle">অধ্যায়ের নাম</label>
         <input id="chapterTitle" class="chapter-title-input" type="text" placeholder="অধ্যায়ের নাম">
-        <textarea id="chapterContent" class="writing-area" placeholder="এখানে লিখুন..."></textarea>
+        <textarea id="chapterContent" class="writing-area" placeholder="Markdown লিখুন..."></textarea>
         <div class="editor-metrics" aria-live="polite">
           <span>Words: <strong id="live-word-count">0</strong></span>
           <span>Characters: <strong id="live-char-count">0</strong></span>
