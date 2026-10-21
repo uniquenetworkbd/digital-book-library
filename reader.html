@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Digital Book Library reader">
+  <link rel="manifest" href="manifest.json">
   <title>Book Reader</title>
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/reader.css">
+  <link rel="stylesheet" href="assets/css/bot.css">
 </head>
 <body>
   <header class="site-header"><div class="container header-inner">
@@ -15,6 +18,7 @@
       <button id="fontIncrease" type="button" title="ফন্ট বড়">A+</button>
       <button id="fontToggle" type="button">ফন্ট</button>
       <button id="nightToggle" type="button">🌙 নাইট</button>
+      <button id="tts-toggle-btn" type="button">🔊 Listen Chapter</button>
     </div>
   </div></header>
   <main class="reader-layout container">
@@ -29,6 +33,8 @@
         <p id="bookAuthor"></p>
       </header>
       <p id="readerStatus" class="status" role="status"></p>
+      <div id="reading-progress-bar" aria-hidden="true" style="height:4px;width:0;transition:width .1s linear;"></div>
+      <p id="reading-time-estimate" class="status" aria-live="polite"></p>
       <section id="chapterContent" class="chapter-content"></section>
       <nav class="chapter-nav" aria-label="অধ্যায় নেভিগেশন">
         <button id="previousChapter" type="button">← পূর্ববর্তী অধ্যায়</button>
@@ -36,6 +42,22 @@
       </nav>
     </article>
   </main>
+  <script src="assets/js/ui-enhancements.js"></script>
+  <script src="assets/js/tts-engine.js"></script>
+  <script src="assets/js/ai-engine.js"></script>
+  <script src="assets/js/backup-engine.js"></script>
   <script type="module" src="assets/js/reader.js"></script>
+  <script>
+    document.getElementById('tts-toggle-btn')?.addEventListener('click', () => {
+      const content = document.getElementById('chapterContent');
+      const text = content?.innerText || '';
+      if (window.ttsEngine?.isPlaying) window.ttsEngine.pause();
+      else if (window.ttsEngine?.isPaused) window.ttsEngine.resume();
+      else window.ttsEngine?.speak(text, document.documentElement.lang === 'bn' ? 'bn-BD' : 'en-US');
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
+    }
+  </script>
 </body>
 </html>
