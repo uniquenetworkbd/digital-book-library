@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" role="img" aria-labelledby="title desc">
+  <title id="title">Digital Book Library</title>
+  <desc id="desc">Digital Book Library logo</desc>
+  <rect width="320" height="96" rx="18" fill="#18202a"/>
+  <path d="M54 22h58c11 0 20 9 20 20v35H74c-11 0-20-9-20-20V22z" fill="#fff" opacity=".95"/>
+  <path d="M74 22v35c0 11 9 20 20 20h38V42c0-11-9-20-20-20H74z" fill="none" stroke="#18202a" stroke-width="4"/>
+  <path d="M74 34h38M74 47h30" stroke="#18202a" stroke-width="4" stroke-linecap="round"/>
+  <text x="154" y="45" fill="#fff" font-family="system-ui, sans-serif" font-size="20" font-weight="700">Digital Book</text>
+  <text x="154" y="68" fill="#fff" font-family="system-ui, sans-serif" font-size="20" font-weight="700">Library</text>
+</svg>
