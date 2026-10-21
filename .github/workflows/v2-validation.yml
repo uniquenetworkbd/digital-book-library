@@ -1,4 +1,4 @@
-name: Digital Book Library V2 Validation
+name: Digital Book Library V2 Validation & v2.1 CI Check
 on:
   push:
     branches: [main]
@@ -11,6 +11,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install v2.1 lint tooling
+        run: npm install --no-audit --no-fund
+      - name: ESLint code quality check
+        run: npm run lint
       - name: Syntax check JavaScript
         run: |
           for f in assets/js/*.js tests/*.mjs; do node --check "$f"; done
