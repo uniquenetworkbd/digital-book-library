@@ -1,10 +1,8 @@
-/* Digital Book Library v2.0 — Bot interaction engine scaffold. */
+/* Digital Book Library v2.0 — floating bot widget + command router. */
 (function () {
   'use strict';
-  window.DigitalBookLibraryBot = {
-    version: 2,
-    handleCommand: function () {
-      throw new Error('V2 bot command engine is not implemented yet.');
-    }
-  };
+  const commandMap={search:1,stats:34,help:54,clear:60,backup:55,restore:56,dashboard:6,bookmarks:6,reader:6,creator:6};
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function init(){if(document.getElementById('dbl-bot-widget'))return;const wrap=document.createElement('section');wrap.id='dbl-bot-widget';wrap.setAttribute('aria-label','Digital Book Library Bot');wrap.innerHTML='<button id="dbl-bot-toggle" type="button" aria-expanded="false" aria-controls="dbl-bot-panel">🤖</button><div id="dbl-bot-panel" hidden><header><strong>Library Assistant</strong><button id="dbl-bot-close" type="button" aria-label="Close">×</button></header><div id="dbl-bot-messages" role="log" aria-live="polite"><div class="dbl-bot-msg bot">Ask me to search, navigate, check stats, or manage your library.</div></div><form id="dbl-bot-form"><input id="dbl-bot-input" autocomplete="off" placeholder="Type a question or /command…"><button type="submit">Send</button></form></div>';document.body.appendChild(wrap);const panel=wrap.querySelector('#dbl-bot-panel'),toggle=wrap.querySelector('#dbl-bot-toggle'),input=wrap.querySelector('#dbl-bot-input'),log=wrap.querySelector('#dbl-bot-messages'),add=(text,role='bot')=>{const d=document.createElement('div');d.className=`dbl-bot-msg ${role}`;d.textContent=String(text??'');log.appendChild(d);log.scrollTop=log.scrollHeight};const run=async raw=>{const text=String(raw||'').trim();if(!text)return;add(text,'user');const key=text.startsWith('/')?text.slice(1).split(/\s+/)[0].toLowerCase():'search',id=commandMap[key]||1,payload={text,query:text.replace(/^\/\w+\s*/,'')};if(['dashboard','bookmarks','reader','creator'].includes(key))payload.target=key;const r=await window.completeBotEngine?.handle(id,payload);add(r?.message||'No response.');return r};toggle.onclick=()=>{const open=!panel.hidden;panel.hidden=open;toggle.setAttribute('aria-expanded',String(!open));if(!open)input.focus()};wrap.querySelector('#dbl-bot-close').onclick=()=>{panel.hidden=true;toggle.setAttribute('aria-expanded','false')};wrap.querySelector('#dbl-bot-form').onsubmit=e=>{e.preventDefault();const v=input.value;input.value='';run(v)};window.DigitalBookLibraryBot={version:'2.0.0',handleCommand:(id,payload)=>window.completeBotEngine.handle(id,payload),toggle:()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden))}}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
