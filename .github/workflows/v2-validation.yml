@@ -20,3 +20,5 @@ jobs:
           for f in assets/js/*.js tests/*.mjs; do node --check "$f"; done
       - name: V2 integration contract
         run: node tests/v2-validation.mjs
+      - name: IndexedDB schema safety audit
+        run: npm run test:db-schema
