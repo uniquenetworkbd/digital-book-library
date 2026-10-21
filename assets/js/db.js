@@ -12,6 +12,19 @@ function requestToPromise(request) {
   });
 }
 
+function transactionToPromise(tx, resultRequest) {
+  return new Promise((resolve, reject) => {
+    let result;
+    if (resultRequest) {
+      resultRequest.onsuccess = () => { result = resultRequest.result; };
+      resultRequest.onerror = () => reject(resultRequest.error || new Error('IndexedDB request failed.'));
+    }
+    tx.oncomplete = () => resolve(result);
+    tx.onerror = () => reject(tx.error || new Error('IndexedDB transaction failed.'));
+    tx.onabort = () => reject(tx.error || new Error('IndexedDB transaction aborted.'));
+  });
+}
+
 export function initDB() {
   return new Promise((resolve, reject) => {
     if (!('indexedDB' in window)) {
@@ -21,8 +34,7 @@ export function initDB() {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-
-      // V1 used keyPath "id". Keep that contract unchanged so existing drafts survive.
+      // V1 used keyPath "id". Never change this key contract during V2 migration.
       if (!db.objectStoreNames.contains(DRAFTS_STORE)) {
         db.createObjectStore(DRAFTS_STORE, { keyPath: 'id' });
       }
@@ -56,12 +68,10 @@ export function initDB() {
 export async function saveDraft(draftData) {
   const db = await initDB();
   const data = { ...draftData, updatedAt: new Date().toISOString() };
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(DRAFTS_STORE, 'readwrite');
-    tx.objectStore(DRAFTS_STORE).put(data);
-    tx.oncomplete = () => resolve(data);
-    tx.onerror = () => reject(tx.error || new Error('Draft save failed.'));
-  });
+  const tx = db.transaction(DRAFTS_STORE, 'readwrite');
+  tx.objectStore(DRAFTS_STORE).put(data);
+  await transactionToPromise(tx);
+  return data;
 }
 
 export async function loadDraft(id) {
@@ -72,42 +82,49 @@ export async function loadDraft(id) {
 export async function saveBookmark(bookmark) {
   const db = await initDB();
   const data = { ...bookmark, updatedAt: new Date().toISOString() };
-  return requestToPromise(new PromiseRequest(db.transaction(BOOKMARKS_STORE, 'readwrite').objectStore(BOOKMARKS_STORE).put(data)));
+  const tx = db.transaction(BOOKMARKS_STORE, 'readwrite');
+  const request = tx.objectStore(BOOKMARKS_STORE).put(data);
+  const key = await transactionToPromise(tx, request);
+  return { ...data, id: data.id ?? key };
 }
 
-// PromiseRequest is intentionally tiny: it attaches the request handlers before the transaction can finish.
-function PromiseRequest(request) {
-  return request;
-}
-
-export async function getBookmarks(bookId, type) {
+export async function getBookmarks(bookId, type = null) {
   const db = await initDB();
-  const tx = db.transaction(BOOKMARKS_STORE, 'readonly');
-  const store = tx.objectStore(BOOKMARKS_STORE);
-  const source = type ? store.index('type') : store.index('bookId');
-  const key = type || bookId;
-  const request = source.getAll(key);
-  const rows = await requestToPromise(request);
-  return type ? rows.filter((row) => row.bookId === bookId) : rows;
+  const store = db.transaction(BOOKMARKS_STORE, 'readonly').objectStore(BOOKMARKS_STORE);
+  const rows = await requestToPromise(store.index('bookId').getAll(String(bookId)));
+  return type ? rows.filter((row) => row.type === type) : rows;
 }
 
 export async function deleteBookmark(id) {
   const db = await initDB();
   const tx = db.transaction(BOOKMARKS_STORE, 'readwrite');
   tx.objectStore(BOOKMARKS_STORE).delete(id);
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error || new Error('Bookmark delete failed.'));
-  });
+  return transactionToPromise(tx);
 }
 
 export async function saveReadingStat(bookId, patch = {}) {
   const db = await initDB();
   const id = String(bookId);
-  const store = db.transaction(STATS_STORE, 'readwrite').objectStore(STATS_STORE);
-  const current = await requestToPromise(store.get(id));
-  const data = { id, bookId: id, ...current, ...patch, updatedAt: new Date().toISOString() };
-  return requestToPromise(store.put(data));
+  const tx = db.transaction(STATS_STORE, 'readwrite');
+  const store = tx.objectStore(STATS_STORE);
+  const getRequest = store.get(id);
+  const result = await new Promise((resolve, reject) => {
+    getRequest.onsuccess = () => {
+      try {
+        const current = getRequest.result || {};
+        const data = { ...current, ...patch, id, bookId: id, updatedAt: new Date().toISOString() };
+        const putRequest = store.put(data);
+        putRequest.onsuccess = () => resolve(data);
+        putRequest.onerror = () => reject(putRequest.error || new Error('Reading stat save failed.'));
+      } catch (error) {
+        reject(error);
+      }
+    };
+    getRequest.onerror = () => reject(getRequest.error || new Error('Reading stat load failed.'));
+    tx.onerror = () => reject(tx.error || new Error('Reading stat transaction failed.'));
+    tx.onabort = () => reject(tx.error || new Error('Reading stat transaction aborted.'));
+  });
+  return result;
 }
 
 export async function loadReadingStat(bookId) {
@@ -118,7 +135,10 @@ export async function loadReadingStat(bookId) {
 export async function addChatMessage(message) {
   const db = await initDB();
   const data = { ...message, createdAt: message.createdAt || new Date().toISOString() };
-  return requestToPromise(db.transaction(CHAT_STORE, 'readwrite').objectStore(CHAT_STORE).add(data));
+  const tx = db.transaction(CHAT_STORE, 'readwrite');
+  const request = tx.objectStore(CHAT_STORE).add(data);
+  const id = await transactionToPromise(tx, request);
+  return { ...data, id };
 }
 
 export async function getChatHistory(bookId) {
