@@ -1,295 +1,201 @@
-# Digital Library & Book Authoring Platform - Complete Master Blueprint
+# Digital Book Library — Comprehensive Master Blueprint Document (v2.0)
 
-## ১. প্রজেক্ট পরিচিতি ও আর্কিটেকচারাল ভিশন (System Architecture)
-
-এই প্রজেক্টটি একটি সম্পূর্ণ ক্লায়েন্ট-সাইড **ডিজিটাল বুক লাইব্রেরি এবং ইন্টারেক্টিভ বুক রাইটিং প্ল্যাটফর্ম**। এটি কোনো বহিঃস্থ সার্ভার, ব্যাকএন্ড অ্যাপ্লিকেশান বা প্রোপারাইটারি ডাটাবেসের ওপর নির্ভর না করে সম্পূর্ণভাবে **GitHub Infrastructure (GitHub Pages, Repository Storage & GitHub REST API)**-এর ওপর ভিত্তি করে পরিচালিত হবে।
-
-```text
-+-----------------------------------------------------------------------+
-|                            USER BROWSER                               |
-|                                                                       |
-|   +-----------------------+   +-------------------+                   |
-|   |   Library Module      |   |   Reader Module   |                   |
-|   |  (Catalog & Filter)   |   | (PDF.js / Epub)   |                   |
-|   +-----------+-----------+   +---------+---------+                   |
-|               |                         |                             |
-|               +------------+------------+                             |
-|                            |                                          |
-|               +------------v------------+                             |
-|               |   Book Creator Editor   |                             |
-|               |   (Template Engine)     |                             |
-|               +------------+------------+                             |
-|                            |                                          |
-|               +------------v------------+                             |
-|               | IndexedDB StorageManager|                             |
-|               |    (Auto-Save Drafts)   |                             |
-|               +------------+------------+                             |
-+----------------------------|------------------------------------------+
-                             | GitHub API / Static Fetch
-                             v
-+-----------------------------------------------------------------------+
-|                         GITHUB REPOSITORY                             |
-|                                                                       |
-|   +-----------------------+   +-----------------------------------+   |
-|   |   /data/catalog.json  |   |   /data/published/*.json          |   |
-|   |   (Catalog Metadata)   |   |   (Published Books Data)          |   |
-|   +-----------------------+   +-----------------------------------+   |
-|                                                                       |
-+-----------------------------------------------------------------------+
-```
+> **Document Version:** 2.0.0 (Enterprise Serverless Architecture)  
+> **Ecosystem Standard:** Pure Client-Side, PWA-Ready, Zero-Cost Hosting  
+> **Deployment Target:** GitHub Pages / Any Static Web Server  
 
 ---
 
-## ২. কমপ্লিট ফোল্ডার ও ফাইল স্ট্রাকচার (Comprehensive File Tree)
+## ১. প্রজেক্টের মূল উদ্দেশ্য ও লক্ষ্য (Project Vision & Core Objectives)
 
-প্রজেক্টের সম্পূর্ণ কোডবেস মোডিউলার আর্কিটেকচার মেনে সংগঠিত করা হয়েছে।
+`digital-book-library` প্ল্যাটফর্মটি তৈরির মূল লক্ষ্য হলো একটি আধুনিক, উচ্চগতিসম্পন্ন, এবং এআই-সক্ষম ডিজিটাল বুক রিডিং, ড্রাফটিং ও লাইব্রেরি ম্যানেজমেন্ট ইকোসিস্টেম গড়ে তোলা।
+
+### মূল স্তম্ভসমূহ (Core Pillars):
+1. **১০০% জিরো-কস্ট ও সার্ভারলেস আর্কিটেকচার:** কোনো পেইড ডাটাবেস বা ব্যাকএন্ড সার্ভার ছাড়াই কেবল ক্লায়েন্ট-সাইড টেকনোলজি (HTML5, CSS3, Vanilla ES6+ JavaScript, IndexedDB) ব্যবহার করে সম্পূর্ণ সিস্টেম সচল রাখা।
+2. **অফলাইন-ফার্স্ট PWA সাপোর্ট:** সার্ভিস ওয়ার্কার (`sw.js`) এবং ওয়েব অ্যাপ ম্যানিফেস্টের মাধ্যমে ডিভাইস নির্বিশেষে এটি নেটিভ অ্যাপের মতো কাজ করবে এবং ইন্টারনেট সংযোগ ছাড়াই বই পড়া নিশ্চিত করবে।
+3. **স্মার্ট এআই ও বট ইন্টিগ্রেশন (৬০টি ফিচার):** পাঠকের অভিজ্ঞতা সমৃদ্ধ করতে টেক্সট-টু-স্পিচ (TTS), ফজি সার্চ, অটোমেটিক টেক্সট সামারাইজেশন এবং ইন্টারেক্টিভ চ্যাট উইজেট সরবরাহ করা।
+4. **ইউজার এক্সপেরিয়েন্স এনহ্যান্সমেন্টস (১৬টি UI/UX ফিচার):** ডার্ক/সেপিয়া থিম ইঞ্জিন, কাস্টম টাইপোগ্রাফি, বুকমার্কিং এবং অটো রিডিং-পজিশন সেভিং।
+5. **গ্রাফিক্যাল ড্যাশবোর্ড ও ডেটা ওনারশিপ:** ব্যবহারকারীর পড়ার পরিসংখ্যান ভিজ্যুয়াল গ্রাফ আকারে উপস্থাপন এবং সম্পূর্ণ প্রজেক্টের ডাটা একক ক্লিকে ব্যাকআপ ও রিস্টোর করার নিশ্চয়তা দেওয়া।
+
+---
+
+## ২. কমপ্লিট ফোল্ডার ও ফাইল স্ট্রাকচার (v2.0 Architectural Map)
+
+নতুন ফিচারসমূহ (PWA, Dashboard, Backup Engine, Bot Assets) সংযুক্ত করার পর প্রজেক্টের সম্পূর্ণ গঠন নিচে দেখানো হলো:
 
 ```text
 digital-book-library/
-├── index.html                  # হোম পেজ (লাইব্রেরি ক্যাটালগ ও ফিল্টার)
-├── reader.html                 # বই পড়ার জন্য রিডার শেল
-├── creator.html                # বই লেখার ও সম্পাদনা করার ইন্টারফেস
-├── manifest.json               # PWA সাপোর্টের জন্য ওয়েব অ্যাপ ম্যানিফেস্ট
-├── sw.js                       # অফলাইন সাপোর্ট ও ক্যাশিং-এর জন্য সার্ভিস ওয়ার্কার
-├── README.md                   # মাস্টার প্রজেক্ট ডকুমেন্টেশন
+├── index.html                           # [v1.0 Core] মূল লাইব্রেরি ও ক্যাটালগ UI
+├── reader.html                          # [v1.0 Core] বুক রিডার মডিউল Interface
+├── creator.html                         # [v1.0 Core] রাইটিং স্টুডিও ও ড্রাফটার
+├── dashboard.html                       # [v2.0 NEW] এনালিটিক্স, গ্রাফিক্যাল চার্ট ও ব্যাকআপ সেন্টার
+├── README.md                            # [v1.0 Core] প্রজেক্ট গাইডলাইন
+├── CNAME                                # [v1.0 Optional] কাস্টম ডোমেইন স্পেসিফিকেশন
+├── manifest.json                        # [v2.0 NEW] PWA কনফিগারেশন ফাইল
+├── sw.js                                # [v2.0 NEW] অফলাইন ক্যাশিং সার্ভিস ওয়ার্কার
 │
 ├── assets/
 │   ├── css/
-│   │   ├── main.css            # গ্লোবাল ওয়েবসাইট লেআউট ও কালার স্কিম
-│   │   ├── reader.css          # রিডার স্ক্রিনের টাইপোগ্রাফি ও থিম কাস্টমাইজেশন
-│   │   └── editor.css          # এডিটর ইন্টারফেস, চ্যাপ্টার ট্র্রি ও প্যানেল ডিজাইন
-│   ├── images/
-│   │   ├── logo.svg
-│   │   └── default-cover.png   # কভার ছবি না থাকলে ব্যবহৃত ডিফল্ট ইমেজ
-│   └── templates/
-│       ├── novel.json          # উপন্যাস টেমপ্লেট
-│       ├── technical.json      # টেকনিক্যাল / ডকুমেন্টেশন টেমপ্লেট
-│       └── research.json       # গবেষণা / নিবন্ধ টেমপ্লেট
+│   │   ├── main.css                     # [v1.0 Core] মূল সাইট লেআউট স্টাইল
+│   │   ├── reader.css                   # [v1.0 Core] রিডার মোড টাইপোগ্রাফি ও লেআউট
+│   │   ├── editor.css                   # [v1.0 Core] ক্রিয়েটর স্টুডিও স্টাইল
+│   │   ├── bot.css                      # [v2.0 NEW] ফ্লোটিং চ্যাট উইজেট ও বট অ্যানিমেশন UI
+│   │   └── dashboard.css                # [v2.0 NEW] ড্যাশবোর্ড কার্ড, গ্রাফ ও প্রোগ্রেস বার স্টাইল
 │
-├── src/                        # ES6 JavaScript Modules
-│   ├── app.js                  # মেইন সাইট রাউটিং ও ইনিশিয়ালাইজেশন
-│   │
-│   ├── database/
-│   │   ├── db.js               # IndexedDB (Dexie.js / Native) ইনস্ট্যান্স সেটআপ
-│   │   └── StorageManager.js   # ড্রাফট অটো-সেভ ও লোকাল ডাটা রিট্রিভাল লজিক
-│   │
-│   ├── modules/
-│   │   ├── library/
-│   │   │   ├── LibraryController.js  # সার্চ, ফিল্টার ও সোর্টিং লজিক
-│   │   │   └── LibraryView.js        # ক্যাটালগ রেন্ডারিং UI
-│   │   │
-│   │   ├── reader/
-│   │   │   ├── ReaderController.js   # পেজ নেভিগেশন ও বুকমার্ক লজিক
-│   │   │   └── ReaderView.js         # টেক্সট/পিডিএফ ইন্টারঅ্যাক্টিভ ভিউ
-│   │   │
-│   │   └── editor/
-│   │       ├── EditorController.js   # ইনপুট হ্যান্ডলার ও অটো-সেভ ট্রিগার
-│   │       ├── TemplateEngine.js     # ক্যাটাগরি স্ট্রাকচার জেনারেটর
-│   │       └── EditorView.js         # ডাইনামিক UI ও ড্র্যাগ অ্যান্ড ড্রপ চ্যাপ্টার
-│   │
-│   └── utils/
-│       ├── Exporter.js         # JSON / HTML / EPUB এক্সপোর্ট লজিক
-│       └── GithubPublisher.js  # GitHub REST API-এর মাধ্যমে লাইভ পাবলিশিং
+│   ├── js/
+│   │   ├── app.js                       # [v1.0 Core] হোমপেজ মেটাডেটা ও সার্চ লজিক
+│   │   ├── reader.js                    # [v1.0 Core] চ্যাপ্টার নেভিগেটর
+│   │   ├── editor.js                    # [v1.0 Core] বুক রাইটিং ড্রাফটার
+│   │   ├── db.js                        # [v2.0 Updated] IndexedDB v2 স্টোরেজ ম্যানেজার
+│   │   ├── bot.js                       # [v2.0 NEW] বট ইন্টারেকশন, স্লাশ কমান্ড ও UI লজিক
+│   │   ├── ai-engine.js                 # [v2.0 NEW] ক্লায়েন্ট-সাইড সার্চ ও টেক্সট সামারাইজার
+│   │   ├── tts-engine.js                # [v2.0 NEW] Web Speech API অডিও রিডার
+│   │   ├── ui-enhancements.js            # [v2.0 NEW] থিম ইঞ্জিন (Sepia/Dark) ও ফন্ট সাইজার
+│   │   ├── backup-engine.js             # [v2.0 NEW] JSON/JSZip ব্যাকআপ ও রিস্টোর ম্যানেজার
+│   │   └── dashboard.js                 # [v2.0 NEW] ক্যানভাস চার্ট রেন্ডারার ও স্ট্যাটস লজিক
 │
-└── data/                       # জেনারেটেড ও প্রকাশিত বইয়ের ফোল্ডার
-    ├── catalog.json            # সকল লাইভ বইয়ের মূল ক্যাটালগ ইন্ডেক্স
-    └── published/
-        ├── sample-novel.json
-        └── sample-tech.json
+│   ├── covers/                          # [v2.0 NEW] কাস্টম আপলোডেড কভার ইমেজ
+│   │   └── default-cover.png
+│
+│   └── templates/                       # [v1.0 Core] বুক স্ট্রাকচারাল JSON টেমপ্লেট
+│       ├── novel.json
+│       ├── technical.json
+│       └── research.json                # [v2.0 NEW] গবেষণা ও অ্যাকাডেমিক টেমপ্লেট
+│
+├── data/
+│   ├── catalog.json                     # [v2.0 Updated] সম্প্রসারিত ক্যাটালগ ও মেটাডেটা
+│   └── books/
+│       ├── book-001.json
+│       └── book-002.json
+│
+└── docs/
+    ├── Master-Blueprint-Document.md     # [v2.0 Document] মূল আর্কিটেকচারাল ব্লুপ্রিন্ট
+    ├── master_roadmap_v2.md             # [v2.0 Document] ৭৬টি ফিচারের মাস্টার তালিকা
+    ├── bot_integration_roadmap.md       # [v2.0 Document] ৬০টি বটের বিশেষ বিশদ বিবরণ
+    └── frontend_enhancement_roadmap.md  # [v2.0 Document] ১৬টি UI/UX ফিচারের গাইডলাইন
 ```
 
 ---
 
-## ৩. ডেটাবেস ও স্টোরেজ ডিজাইন (Database Schemas)
+## ৩. নতুন যুক্ত হওয়া উপাদানগুলোর বিশ্লেষণ (New Components Rationale)
 
-### ৩.১ `data/catalog.json` (লাইব্রেরি ক্যাটালগ স্কিমা)
+| ফাইল / ফোল্ডার | কেন যুক্ত করা হয়েছে? | কার্যকারিতা ও সুবিধা |
+| :--- | :--- | :--- |
+| `dashboard.html` | ড্যাশবোর্ড ইউজার ইন্টারফেস প্রদান | পড়ার পরিসংখ্যান, প্রোগ্রেস গ্রাফ এবং ব্যাকআপ কন্ট্রোল এক জায়গায় ব্যবহারের সুযোগ দেয়। |
+| `manifest.json` | PWA রূপান্তর | মোবাইল ও ডেস্কটপে সাইটটি ইনস্টল করার অপশন আনে। |
+| `sw.js` | সার্ভিস ওয়ার্কার ম্যানেজার | নেটওয়ার্ক না থাকলেও পূর্বে ক্যাশ করা বই পড়ার সুবিধা দেয়। |
+| `assets/css/dashboard.css` | ড্যাশবোর্ডের ভিজ্যুয়াল থিম | চার্ট, মিটার এবং স্ট্যাটাস কার্ডগুলোকে দৃষ্টিনন্দন করে তোলে। |
+| `assets/css/bot.css` | চ্যাট অ্যাসিস্ট্যান্ট স্টাইল | স্ক্রিনের নিচে ফ্লোটিং চ্যাট উইজেট এবং রেসপন্সিভ পপ-আপ মেসেজিং লেআউট পরিচালনা করে। |
+| `assets/js/backup-engine.js` | ডেটা সেফটি ও পোর্টেবিলিটি | `IndexedDB`-এর সমস্ত রেকর্ড এক ক্লিকে ডাউনলোড ও রিস্টোর করার সুবিধা তৈরি করে। |
+| `assets/js/dashboard.js` | চার্ট ও অ্যানালিটিক্স লজিক | ব্রাউজারের HTML5 Canvas ব্যবহার করে ডেটা গ্রাফিকাল ফরম্যাটে উপস্থাপন করে। |
+| `assets/js/bot.js` | চ্যাটবট ফ্রন্ট-এন্ড কোর | ইউজার কমান্ড পার্সিং, স্বয়ংক্রিয় উত্তর ও ইন্টারঅ্যাকশন নিয়ন্ত্রণ করে। |
+| `assets/js/ai-engine.js` | ক্লায়েন্ট-সাইড ইন্টেলিজেন্স | ডাটাবেসের মধ্যে দ্রুত ফজি সার্চ এবং টেক্সট প্রসেসিং সম্পন্ন করে। |
+| `assets/js/tts-engine.js` | ভয়েস ন্যারেশন | Web Speech API দিয়ে বইয়ের লেখা ভয়েসে রূপান্তর করে। |
+| `assets/js/ui-enhancements.js` | ডায়নামিক রিডিং এনভায়রনমেন্ট | ডার্ক, সেপিয়া ও লাইট থিমের মধ্যে স্যুইচিং নিয়ন্ত্রণ করে। |
 
-```json
-[
-  {
-    "id": "book-101",
-    "title": "ডিজিটাল লাইব্রেরি আর্কিটেকচার",
-    "author": "আব্দুল্লাহ আল মাসউদ",
-    "category": "Technical",
-    "description": "কীভাবে ফ্রন্টএন্ড টুলস দিয়ে ব্যাকএন্ডহীন প্ল্যাটফর্ম তৈরি করা যায়।",
-    "coverImage": "assets/images/default-cover.png",
-    "contentUrl": "data/published/book-101.json",
-    "publishedAt": "2026-03-30",
-    "tags": ["JavaScript", "Architecture", "GitHub"]
-  }
-]
-```
+---
 
-### ৩.২ `data/published/{book-id}.json` (বইয়ের কনটেন্ট স্কিমা)
+## ৪. নতুন উপাদানগুলোর অভ্যন্তরীণ গঠন ও তৈরি করার নিয়ম
 
-```json
-{
-  "meta": {
-    "id": "book-101",
-    "title": "ডিজিটাল লাইব্রেরি আর্কিটেকচার",
-    "author": "আব্দুল্লাহ আল মাসউদ",
-    "category": "Technical",
-    "language": "bn",
-    "createdAt": "2026-03-25",
-    "updatedAt": "2026-03-30"
-  },
-  "chapters": [
-    {
-      "id": "ch-1",
-      "title": "অধ্যায় ১: পরিচিতি",
-      "content": "ওয়েব অ্যাপ্লিকেশন তৈরি করার ক্ষেত্রে...",
-      "subsections": [
-        {
-          "id": "sub-1-1",
-          "title": "১.১ প্ল্যাটফর্মের বৈশিষ্ট্য",
-          "content": "এই প্ল্যাটফর্মের মূল বৈশিষ্ট্য হলো..."
-        }
-      ]
-    }
-  ]
-}
-```
-
-### ৩.৩ IndexedDB ডাফট স্কিমা (`src/database/db.js`)
-
-```javascript
-// IndexedDB Schema (Web Browser Internal Database)
-const DB_NAME = 'BookCreatorDB';
-const DB_VERSION = 1;
-
-export function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains('drafts')) {
-        const store = db.createObjectStore('drafts', { keyPath: 'id' });
-        store.createIndex('updatedAt', 'updatedAt', { unique: false });
-      }
-    };
-
-    request.onsuccess = (event) => resolve(event.target.result);
-    request.onerror = (event) => reject(event.target.error);
+### ৪.১ ড্যাশবোর্ড মডিউল (`dashboard.html` & `assets/js/dashboard.js`)
+* **গঠন:** এটি একটি কাস্টম HTML5 পেজ যাতে বিভিন্ন Canvas ইলিমেন্ট থাকবে।
+* **তৈরি পদ্ধতি:**
+  ```javascript
+  // assets/js/dashboard.js
+  document.addEventListener('DOMContentLoaded', async () => {
+      const db = await openDatabase();
+      renderReadingCharts(db);
+      renderStorageStats();
   });
-}
-```
 
----
-
-## ৪. কোড ফ্রেমওয়ার্ক ও মূল মডিউল বাস্তবায়ন (Core Code Snippets)
-
-### ৪.১ অটো-সেভ ম্যানেজমেন্ট (`src/database/StorageManager.js`)
-
-```javascript
-import { initDB } from './db.js';
-
-export class StorageManager {
-  static async saveDraft(draftData) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['drafts'], 'readwrite');
-      const store = transaction.objectStore('drafts');
-
-      draftData.updatedAt = new Date().toISOString();
-      const request = store.put(draftData);
-
-      request.onsuccess = () => resolve(true);
-      request.onerror = () => reject(request.error);
-    });
+  function renderReadingCharts(db) {
+      const canvas = document.getElementById('readingChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      // Simple Native Canvas Bar Chart Logic
+      ctx.fillStyle = '#0066cc';
+      ctx.fillRect(10, 50, 40, 100); // Sample bar rendering logic
   }
+  ```
 
-  static async loadDraft(bookId) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['drafts'], 'readonly');
-      const store = transaction.objectStore('drafts');
-      const request = store.get(bookId);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-}
-```
-
-### ৪.২ টেমপ্লেট ইঞ্জিন মডিউল (`src/modules/editor/TemplateEngine.js`)
-
-```javascript
-export class TemplateEngine {
-  static async loadTemplate(categoryName) {
-    try {
-      const response = await fetch(`assets/templates/${categoryName.toLowerCase()}.json`);
-      if (!response.ok) throw new Error('Template not found');
-      return await response.json();
-    } catch (error) {
-      console.warn('Falling back to default novel template:', error);
-      return {
-        meta: { title: "নতুন বই", category: categoryName },
-        chapters: [{ id: "ch-1", title: "অধ্যায় ১", content: "" }]
+### ৪.২ ব্যাকআপ ও রিস্টোর ইঞ্জিন (`assets/js/backup-engine.js`)
+* **গঠন:** `IndexedDB`-এর ৪টি স্টোর (`drafts`, `chatHistory`, `bookmarks`, `readingStats`) থেকে ডেটা তুলে এনে JSON অবজেক্ট তৈরি করবে।
+* **তৈরি পদ্ধতি:**
+  ```javascript
+  async function exportFullDatabase() {
+      const db = await openDatabase();
+      const backupData = {
+          version: 2.0,
+          timestamp: new Date().toISOString(),
+          chatHistory: await getAllStoreData(db, 'chatHistory'),
+          bookmarks: await getAllStoreData(db, 'bookmarks'),
+          readingStats: await getAllStoreData(db, 'readingStats'),
+          drafts: await getAllStoreData(db, 'drafts')
       };
-    }
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `library_backup_${Date.now()}.json`;
+      a.click();
   }
-}
-```
+  ```
 
-### ৪.৩ GitHub API লাইভ পাবলিশিং (`src/utils/GithubPublisher.js`)
-
-```javascript
-export class GithubPublisher {
-  constructor(patToken, repoOwner, repoName) {
-    this.token = patToken;
-    this.owner = repoOwner;
-    this.repo = repoName;
+### ৪.৩ অফলাইন PWA ইকোসিস্টেম (`manifest.json` & `sw.js`)
+* **`manifest.json` স্ট্যান্ডার্ড:**
+  ```json
+  {
+    "short_name": "BookLibrary",
+    "name": "Digital Book Library PWA",
+    "icons": [
+      {
+        "src": "assets/covers/default-cover.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      }
+    ],
+    "start_url": "./index.html",
+    "background_color": "#ffffff",
+    "theme_color": "#0066cc",
+    "display": "standalone"
   }
+  ```
+* **`sw.js` ক্যাশিং স্ট্র্যাটেজি:**
+  ```javascript
+  const CACHE_NAME = 'library-v2-cache';
+  const ASSETS_TO_CACHE = [
+      './',
+      './index.html',
+      './reader.html',
+      './dashboard.html',
+      './assets/css/main.css',
+      './assets/css/bot.css',
+      './assets/css/dashboard.css',
+      './assets/js/app.js',
+      './assets/js/db.js',
+      './assets/js/bot.js',
+      './assets/js/backup-engine.js',
+      './assets/js/dashboard.js'
+  ];
 
-  async publishBook(bookId, bookContent, commitMessage) {
-    const path = `data/published/${bookId}.json`;
-    const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}`;
+  self.addEventListener('install', (e) => {
+      e.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+      );
+  });
 
-    // Convert content to Base64 (Required by GitHub API)
-    const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(bookContent, null, 2))));
-
-    const payload = {
-      message: commitMessage || `Publish book: ${bookId}`,
-      content: contentEncoded,
-      branch: 'main'
-    };
-
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${this.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) throw new Error('Failed to commit file to GitHub repository.');
-    return await response.json();
-  }
-}
-```
+  self.addEventListener('fetch', (e) => {
+      e.respondWith(
+          caches.match(e.request).then((res) => res || fetch(e.request))
+      );
+  });
+  ```
 
 ---
 
-## ৫. ডিপ্লয়মেন্ট ও সেটআপ ম্যানুয়েল (Deployment Manual)
+## ৫. ডিপ্লয়মেন্ট ও বাস্তবায়ন প্রোটোকল
 
-### ৫.১ GitHub Repository সৃষ্টি
-
-১. আপনার GitHub অ্যাকাউন্টে যান এবং **New Repository** বাটনে ক্লিক করুন।  
-২. Repository Name: `digital-book-library` সেট করুন।  
-৩. Visibility: **Public** রাখুন।  
-৪. **Initialize with README** চেকবক্সে টিক দিয়ে তৈরি করুন।
-
-### ৫.২ GitHub Pages কনফিগারেশন
-
-১. Repository-র **Settings** মেনুতে যান।  
-২. সাইডবার থেকে **Pages** বিকল্পে ক্লিক করুন।  
-৩. **Source** সেকশনে `Deploy from a branch` নির্বাচন করুন।  
-৪. **Branch**: `main` এবং **Folder**: `/ (root)` সিলেক্ট করে **Save** দিন।  
-৫. ২ মিনিটের মধ্যে সাইটটি `https://<your-username>.github.io/digital-book-library/` ঠিকানায় লাইভ হবে।
-
----
-
-I have generated the complete **Master Blueprint Document** in markdown format. It includes the architecture, directory tree, database schemas, and actual module codes to guide your implementation.
+১. **ব্যাকওয়ার্ড কম্প্যাটিবিলিটি (v1.0 অক্ষুণ্ন রাখা):** পূর্বে বিদ্যমান `index.html`, `reader.html` বা মূল ফাইলগুলোর কোনো বিদ্যমান কোড মোছা যাবে না।
+২. **অ্যাসিনক্রোনাস মডিউল লোডিং:** প্রতিটি নতুন JS ফাইল HTML ফাইলে যুক্ত করার সময় অবশ্যই `<script defer src="..."></script>` ব্যবহার করতে হবে।
+৩. **গিটহাব পেজেস লাইভ ডিরেক্টরি:** প্রজেক্টের সমস্ত পরিবর্তন সম্পন্ন করার পর `git push origin main` সম্পাদন করলেই কাস্টম ডোমেইন বা GitHub সাবডোমেইনে v2.0 ভার্সনটি তাৎক্ষণিকভাবে লাইভ হবে।
