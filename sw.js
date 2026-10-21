@@ -1,4 +1,4 @@
-const CACHE_NAME='digital-book-library-v2-cache-v4';
+const CACHE_NAME='digital-book-library-v2-cache-v5';
 const APP_SHELL=['./','./index.html','./reader.html','./creator.html','./dashboard.html','./manifest.json','./assets/css/main.css','./assets/css/reader.css','./assets/css/editor.css','./assets/css/bot.css','./assets/css/dashboard.css','./assets/js/app.js','./assets/js/reader.js','./assets/js/editor.js','./assets/js/db.js','./assets/js/bot.js','./assets/js/complete-bot-engine.js','./assets/js/ai-engine.js','./assets/js/tts-engine.js','./assets/js/ui-enhancements.js','./assets/js/backup-engine.js','./assets/js/dashboard.js','./assets/js/pwa.js','./assets/icons/icon.svg','./data/catalog.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(APP_SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
