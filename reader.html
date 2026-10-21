@@ -18,6 +18,8 @@
       <button id="fontIncrease" type="button" title="ফন্ট বড়">A+</button>
       <button id="fontToggle" type="button">ফন্ট</button>
       <button id="nightToggle" type="button">🌙 নাইট</button>
+      <button id="bookmarkButton" type="button">🔖 Bookmark</button>
+      <button id="highlightButton" type="button">🖍 Highlight</button>
       <button id="tts-toggle-btn" type="button">🔊 Listen Chapter</button>
     </div>
   </div></header>
@@ -32,8 +34,8 @@
         <h1 id="bookTitle">বই লোড হচ্ছে...</h1>
         <p id="bookAuthor"></p>
       </header>
-      <p id="readerStatus" class="status" role="status"></p>
-      <div id="reading-progress-bar" aria-hidden="true" style="height:4px;width:0;transition:width .1s linear;"></div>
+      <p id="readerStatus" class="status" role="status" aria-live="polite"></p>
+      <div id="reading-progress-bar" class="reading-progress-bar" aria-hidden="true"></div>
       <p id="reading-time-estimate" class="status" aria-live="polite"></p>
       <section id="chapterContent" class="chapter-content"></section>
       <nav class="chapter-nav" aria-label="অধ্যায় নেভিগেশন">
