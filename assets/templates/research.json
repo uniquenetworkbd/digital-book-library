@@ -1,0 +1,10 @@
+{
+  "title": "নতুন গবেষণা / নিবন্ধ",
+  "category": "Research",
+  "chapters": [
+    { "id": "research-introduction", "title": "ভূমিকা", "content": "" },
+    { "id": "research-methodology", "title": "গবেষণা পদ্ধতি", "content": "" },
+    { "id": "research-findings", "title": "ফলাফল ও বিশ্লেষণ", "content": "" },
+    { "id": "research-conclusion", "title": "উপসংহার", "content": "" }
+  ]
+}
