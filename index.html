@@ -4,8 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Digital Book Library — browse, search and read books.">
+  <link rel="manifest" href="manifest.json">
   <title>Digital Book Library</title>
   <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/bot.css">
 </head>
 <body>
   <header class="site-header">
@@ -14,6 +16,7 @@
       <nav aria-label="প্রধান নেভিগেশন">
         <a href="index.html">লাইব্রেরি</a>
         <a href="creator.html">বই লিখুন</a>
+        <a href="dashboard.html">ড্যাশবোর্ড</a>
       </nav>
     </div>
   </header>
@@ -42,6 +45,15 @@
     <section id="bookGrid" class="book-grid" aria-live="polite"></section>
   </main>
   <footer class="site-footer"><div class="container">GitHub Pages • Vanilla JavaScript • JSON • IndexedDB</div></footer>
+  <script src="assets/js/ui-enhancements.js"></script>
+  <script src="assets/js/ai-engine.js"></script>
+  <script src="assets/js/tts-engine.js"></script>
+  <script src="assets/js/backup-engine.js"></script>
   <script type="module" src="assets/js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
+    }
+  </script>
 </body>
 </html>
