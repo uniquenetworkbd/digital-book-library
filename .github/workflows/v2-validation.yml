@@ -1,0 +1,18 @@
+name: Digital Book Library V2 Validation
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Syntax check JavaScript
+        run: |
+          for f in assets/js/*.js tests/*.mjs; do node --check "$f"; done
+      - name: V2 integration contract
+        run: node tests/v2-validation.mjs
