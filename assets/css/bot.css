@@ -1,7 +1,2 @@
-/* Digital Book Library v2.0 — Bot UI scaffold.
- * Feature implementation remains modular and can be added without changing V1 styles.
- */
-.bot-widget,
-.bot-message {
-  box-sizing: border-box;
-}
+/* Digital Book Library v2.0 — Floating Bot UI */
+#dbl-bot-widget{position:fixed;right:18px;bottom:18px;z-index:9999;font:14px/1.4 system-ui,sans-serif}#dbl-bot-toggle{width:52px;height:52px;border:0;border-radius:50%;cursor:pointer;font-size:24px;box-shadow:0 8px 24px rgba(0,0,0,.3)}#dbl-bot-panel{width:min(360px,calc(100vw - 36px));height:min(520px,70vh);margin-bottom:10px;border:1px solid #334155;border-radius:16px;overflow:hidden;background:#0f172a;color:#e2e8f0;box-shadow:0 18px 50px rgba(0,0,0,.4)}#dbl-bot-panel[hidden]{display:none}#dbl-bot-panel header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#1e293b;border-bottom:1px solid #334155}#dbl-bot-close{border:0;background:transparent;color:inherit;font-size:22px;cursor:pointer}#dbl-bot-messages{height:calc(100% - 108px);overflow:auto;padding:12px}.dbl-bot-msg{max-width:88%;padding:9px 11px;margin:0 0 9px;border-radius:12px;white-space:pre-wrap;word-break:break-word}.dbl-bot-msg.bot{background:#1e293b}.dbl-bot-msg.user{margin-left:auto;background:#2563eb;color:#fff}#dbl-bot-form{display:flex;gap:8px;padding:10px;border-top:1px solid #334155}#dbl-bot-input{min-width:0;flex:1;border:1px solid #475569;border-radius:9px;padding:9px;background:#0b1220;color:#fff}#dbl-bot-form button{border:0;border-radius:9px;padding:9px 12px;cursor:pointer}
