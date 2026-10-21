@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Digital Book Library">
+  <rect width="512" height="512" rx="96" fill="#18202a"/>
+  <path d="M104 92h154c30 0 54 24 54 54v274H158c-30 0-54-24-54-54V92z" fill="#fff"/>
+  <path d="M158 92v274c0 30 24 54 54 54h100V146c0-30-24-54-54-54H158z" fill="none" stroke="#18202a" stroke-width="18"/>
+  <path d="M158 154h110M158 206h92M158 258h110" stroke="#18202a" stroke-width="18" stroke-linecap="round"/>
+</svg>
