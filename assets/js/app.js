@@ -6,7 +6,7 @@ const categoryFilter = document.querySelector('#categoryFilter');
 const tagFilter = document.querySelector('#tagFilter');
 const sortFilter = document.querySelector('#sortFilter');
 
-function escapeHTML(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
+function escapeHTML(value = '') { return String(value).replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char])); }
 function normalizedTags(book) { const values = Array.isArray(book.tags) ? book.tags : (book.tags ? String(book.tags).split(',') : []); return values.map((tag) => String(tag).trim().toLowerCase()).filter(Boolean); }
 function getFilteredBooks() {
   const query = state.query.trim().toLowerCase();
@@ -40,7 +40,9 @@ function render() {
   if (!books.length) { grid.innerHTML = '<p class="status">এই অনুসন্ধানে কোনো বই পাওয়া যায়নি।</p>'; return; }
   grid.innerHTML = books.map((book) => {
     const tags = normalizedTags(book).slice(0, 4).map((tag) => `<span class="tag-chip">${escapeHTML(tag)}</span>`).join('');
-    const cover = book.coverImage ? `<img src="${escapeHTML(book.coverImage)}" alt="${escapeHTML(book.title)} কভার" loading="lazy">` : '📖';
+    const cover = book.coverImage
+      ? `<img src="${escapeHTML(book.coverImage)}" alt="${escapeHTML(book.title)} কভার" loading="lazy" width="150" height="220">`
+      : '📖';
     return `<article class="book-card"><div class="book-cover" aria-label="বইয়ের কভার">${cover}</div><div class="book-card-body"><p class="eyebrow">${escapeHTML(book.category)}</p><h2>${escapeHTML(book.title)}</h2><p>লেখক: ${escapeHTML(book.author)}</p><p>${escapeHTML(book.publishDate || '')}</p><div class="book-tags">${tags}</div><a class="read-button" href="reader.html?id=${encodeURIComponent(book.id)}">Read Now</a></div></article>`;
   }).join('');
   if (books.length < filtered.length) grid.insertAdjacentHTML('beforeend', '<div id="catalogSentinel" class="catalog-sentinel" aria-label="আরও বই লোড হচ্ছে"><span class="loading-spinner" aria-hidden="true"></span><span>আরও বই লোড হচ্ছে...</span></div>');
