@@ -1,0 +1,14 @@
+{
+  "name": "digital-book-library",
+  "version": "2.1.0-dev",
+  "private": true,
+  "description": "Zero-Cost, Serverless, Client-Side PWA Platform",
+  "scripts": {
+    "lint": "eslint assets/js/ sw.js --max-warnings 0",
+    "lint:fix": "eslint assets/js/ sw.js --fix",
+    "test:contract": "node tests/v2-validation.mjs"
+  },
+  "devDependencies": {
+    "eslint": "8.57.0"
+  }
+}
