@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint assets/js/ sw.js --max-warnings 0",
     "lint:fix": "eslint assets/js/ sw.js --fix",
-    "test:contract": "node tests/v2-validation.mjs"
+    "test:contract": "node tests/v2-validation.mjs",
+    "test:db-schema": "node tests/indexeddb-schema-audit.mjs"
   },
   "devDependencies": {
     "eslint": "8.57.0"
