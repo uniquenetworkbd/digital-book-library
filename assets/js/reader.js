@@ -1,6 +1,8 @@
+import { getBookmarks, saveBookmark, deleteBookmark, loadReadingStat, saveReadingStat } from './db.js';
+
 const params = new URLSearchParams(window.location.search);
 const bookId = params.get('id');
-const state = { book: null, chapterIndex: 0, fontSize: 1, altFont: false, night: false };
+const state = { book: null, chapterIndex: 0, fontSize: 1, altFont: false, night: false, highlights: [], saveTimer: null };
 const $ = (selector) => document.querySelector(selector);
 
 function escapeHTML(value = '') {
@@ -9,6 +11,8 @@ function escapeHTML(value = '') {
 function formatContent(text = '') {
   return escapeHTML(text).split(/\n\n+/).map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`).join('');
 }
+function chapterKey(index = state.chapterIndex) { return `${bookId}:chapter:${index}`; }
+
 function renderTOC() {
   $('#tocList').innerHTML = state.book.chapters.map((chapter, index) => `<a href="#chapter-${index}" data-index="${index}" class="${index === state.chapterIndex ? 'active' : ''}">${escapeHTML(chapter.title)}</a>`).join('');
   $('#tocList').querySelectorAll('a').forEach((link) => link.addEventListener('click', (event) => {
@@ -17,7 +21,108 @@ function renderTOC() {
     history.replaceState(null, '', `reader.html?id=${encodeURIComponent(bookId)}#chapter-${link.dataset.index}`);
   }));
 }
-function showChapter(index) {
+
+function getTextOffset(root, node, offset) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let total = 0;
+  let current;
+  while ((current = walker.nextNode())) {
+    if (current === node) return total + offset;
+    total += current.nodeValue.length;
+  }
+  return total;
+}
+
+function locateTextOffset(root, target) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let total = 0;
+  let node;
+  while ((node = walker.nextNode())) {
+    const end = total + node.nodeValue.length;
+    if (target <= end) return { node, offset: Math.max(0, target - total) };
+    total = end;
+  }
+  return null;
+}
+
+function restoreHighlight(highlight) {
+  const root = $('#chapterContent');
+  const start = locateTextOffset(root, highlight.startOffset);
+  const end = locateTextOffset(root, highlight.endOffset);
+  if (!start || !end || highlight.startOffset >= highlight.endOffset) return;
+  try {
+    const range = document.createRange();
+    range.setStart(start.node, start.offset);
+    range.setEnd(end.node, end.offset);
+    const mark = document.createElement('mark');
+    mark.className = `reader-highlight highlight-${highlight.color || 'yellow'}`;
+    mark.dataset.highlightId = String(highlight.id);
+    range.surroundContents(mark);
+  } catch (error) {
+    console.warn('Highlight could not be restored:', error);
+  }
+}
+
+function renderHighlights() {
+  document.querySelectorAll('.reader-highlight').forEach((node) => node.replaceWith(document.createTextNode(node.textContent || '')));
+  state.highlights.filter((item) => item.chapterIndex === state.chapterIndex).sort((a, b) => b.startOffset - a.startOffset).forEach(restoreHighlight);
+}
+
+async function loadHighlights() {
+  state.highlights = await getBookmarks(bookId, 'highlight').catch(() => []);
+}
+
+async function highlightSelection(color = 'yellow') {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+  const range = selection.getRangeAt(0);
+  const root = $('#chapterContent');
+  if (!root.contains(range.commonAncestorContainer)) return;
+  const startOffset = getTextOffset(root, range.startContainer, range.startOffset);
+  const endOffset = getTextOffset(root, range.endContainer, range.endOffset);
+  if (endOffset <= startOffset) return;
+  const bookmark = await saveBookmark({ bookId, type: 'highlight', chapterIndex: state.chapterIndex, startOffset, endOffset, color, text: selection.toString().slice(0, 500) });
+  state.highlights.push(bookmark);
+  renderHighlights();
+  selection.removeAllRanges();
+}
+
+async function addCurrentBookmark() {
+  const existing = await getBookmarks(bookId, 'position').catch(() => []);
+  const data = { bookId, type: 'position', chapterIndex: state.chapterIndex, scrollY: Math.round(window.scrollY), title: state.book.chapters[state.chapterIndex].title };
+  if (existing[0]?.id) {
+    data.id = existing[0].id;
+    await saveBookmark(data);
+  } else {
+    await saveBookmark(data);
+  }
+  showReaderStatus('বুকমার্ক সংরক্ষণ করা হয়েছে।');
+}
+
+async function restoreResume() {
+  const stat = await loadReadingStat(bookId).catch(() => null);
+  if (!stat || !Number.isFinite(stat.scrollY)) return;
+  const chapterIndex = Number.isInteger(stat.chapterIndex) ? stat.chapterIndex : 0;
+  if (chapterIndex >= 0 && chapterIndex < state.book.chapters.length) {
+    state.chapterIndex = chapterIndex;
+    showChapter(chapterIndex, false);
+    requestAnimationFrame(() => window.scrollTo({ top: stat.scrollY, behavior: 'auto' }));
+  }
+}
+
+function scheduleReadingSave() {
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(async () => {
+    await saveReadingStat(bookId, { chapterIndex: state.chapterIndex, scrollY: Math.round(window.scrollY), lastReadAt: new Date().toISOString() }).catch((error) => console.warn('Reading position save failed:', error));
+  }, 500);
+}
+
+function showReaderStatus(message) {
+  const el = $('#readerStatus');
+  if (el) el.textContent = message;
+}
+
+function showChapter(index, updateHistory = true) {
   const chapters = state.book.chapters;
   if (!chapters[index]) return;
   state.chapterIndex = index;
@@ -26,15 +131,22 @@ function showChapter(index) {
   $('#previousChapter').disabled = index === 0;
   $('#nextChapter').disabled = index === chapters.length - 1;
   $('#tocList').querySelectorAll('a').forEach((link) => link.classList.toggle('active', Number(link.dataset.index) === index));
+  renderHighlights();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  if (updateHistory) history.replaceState(null, '', `reader.html?id=${encodeURIComponent(bookId)}#chapter-${index}`);
+  scheduleReadingSave();
 }
+
 function applyReaderSettings() {
   const root = document.querySelector('.reader-layout');
   root.style.setProperty('--reader-font-scale', state.fontSize);
   $('#chapterContent').style.fontSize = `${state.fontSize}em`;
   root.classList.toggle('night', state.night);
-  $('#reader-main')?.classList.toggle('font-alt', state.altFont);
   document.querySelector('.reader-main').classList.toggle('font-alt', state.altFont);
+  localStorage.setItem('reader-local-font-scale', String(state.fontSize));
+  localStorage.setItem('reader-alt-font', String(state.altFont));
 }
+
 async function loadBook() {
   if (!bookId) throw new Error('Book id is missing.');
   const catalogResponse = await fetch('data/catalog.json', { cache: 'no-store' });
@@ -49,8 +161,12 @@ async function loadBook() {
   $('#bookAuthor').textContent = `লেখক: ${state.book.author}`;
   $('#bookCategory').textContent = state.book.category;
   renderTOC();
+  await loadHighlights();
   const hashIndex = Number(location.hash.replace('#chapter-', ''));
-  showChapter(Number.isInteger(hashIndex) && hashIndex >= 0 ? hashIndex : 0);
+  const initialIndex = Number.isInteger(hashIndex) && hashIndex >= 0 ? hashIndex : 0;
+  showChapter(initialIndex, false);
+  await restoreResume();
+  applyReaderSettings();
 }
 
 $('#previousChapter').addEventListener('click', () => showChapter(state.chapterIndex - 1));
@@ -59,5 +175,8 @@ $('#fontDecrease').addEventListener('click', () => { state.fontSize = Math.max(.
 $('#fontIncrease').addEventListener('click', () => { state.fontSize = Math.min(1.6, state.fontSize + .1); applyReaderSettings(); });
 $('#fontToggle').addEventListener('click', () => { state.altFont = !state.altFont; applyReaderSettings(); });
 $('#nightToggle').addEventListener('click', () => { state.night = !state.night; applyReaderSettings(); });
+$('#bookmarkButton')?.addEventListener('click', addCurrentBookmark);
+$('#highlightButton')?.addEventListener('click', () => highlightSelection('yellow'));
+window.addEventListener('scroll', scheduleReadingSave, { passive: true });
 
-loadBook().catch((error) => { console.error(error); $('#readerStatus').textContent = error.message; });
+loadBook().catch((error) => { console.error(error); showReaderStatus(error.message); });
