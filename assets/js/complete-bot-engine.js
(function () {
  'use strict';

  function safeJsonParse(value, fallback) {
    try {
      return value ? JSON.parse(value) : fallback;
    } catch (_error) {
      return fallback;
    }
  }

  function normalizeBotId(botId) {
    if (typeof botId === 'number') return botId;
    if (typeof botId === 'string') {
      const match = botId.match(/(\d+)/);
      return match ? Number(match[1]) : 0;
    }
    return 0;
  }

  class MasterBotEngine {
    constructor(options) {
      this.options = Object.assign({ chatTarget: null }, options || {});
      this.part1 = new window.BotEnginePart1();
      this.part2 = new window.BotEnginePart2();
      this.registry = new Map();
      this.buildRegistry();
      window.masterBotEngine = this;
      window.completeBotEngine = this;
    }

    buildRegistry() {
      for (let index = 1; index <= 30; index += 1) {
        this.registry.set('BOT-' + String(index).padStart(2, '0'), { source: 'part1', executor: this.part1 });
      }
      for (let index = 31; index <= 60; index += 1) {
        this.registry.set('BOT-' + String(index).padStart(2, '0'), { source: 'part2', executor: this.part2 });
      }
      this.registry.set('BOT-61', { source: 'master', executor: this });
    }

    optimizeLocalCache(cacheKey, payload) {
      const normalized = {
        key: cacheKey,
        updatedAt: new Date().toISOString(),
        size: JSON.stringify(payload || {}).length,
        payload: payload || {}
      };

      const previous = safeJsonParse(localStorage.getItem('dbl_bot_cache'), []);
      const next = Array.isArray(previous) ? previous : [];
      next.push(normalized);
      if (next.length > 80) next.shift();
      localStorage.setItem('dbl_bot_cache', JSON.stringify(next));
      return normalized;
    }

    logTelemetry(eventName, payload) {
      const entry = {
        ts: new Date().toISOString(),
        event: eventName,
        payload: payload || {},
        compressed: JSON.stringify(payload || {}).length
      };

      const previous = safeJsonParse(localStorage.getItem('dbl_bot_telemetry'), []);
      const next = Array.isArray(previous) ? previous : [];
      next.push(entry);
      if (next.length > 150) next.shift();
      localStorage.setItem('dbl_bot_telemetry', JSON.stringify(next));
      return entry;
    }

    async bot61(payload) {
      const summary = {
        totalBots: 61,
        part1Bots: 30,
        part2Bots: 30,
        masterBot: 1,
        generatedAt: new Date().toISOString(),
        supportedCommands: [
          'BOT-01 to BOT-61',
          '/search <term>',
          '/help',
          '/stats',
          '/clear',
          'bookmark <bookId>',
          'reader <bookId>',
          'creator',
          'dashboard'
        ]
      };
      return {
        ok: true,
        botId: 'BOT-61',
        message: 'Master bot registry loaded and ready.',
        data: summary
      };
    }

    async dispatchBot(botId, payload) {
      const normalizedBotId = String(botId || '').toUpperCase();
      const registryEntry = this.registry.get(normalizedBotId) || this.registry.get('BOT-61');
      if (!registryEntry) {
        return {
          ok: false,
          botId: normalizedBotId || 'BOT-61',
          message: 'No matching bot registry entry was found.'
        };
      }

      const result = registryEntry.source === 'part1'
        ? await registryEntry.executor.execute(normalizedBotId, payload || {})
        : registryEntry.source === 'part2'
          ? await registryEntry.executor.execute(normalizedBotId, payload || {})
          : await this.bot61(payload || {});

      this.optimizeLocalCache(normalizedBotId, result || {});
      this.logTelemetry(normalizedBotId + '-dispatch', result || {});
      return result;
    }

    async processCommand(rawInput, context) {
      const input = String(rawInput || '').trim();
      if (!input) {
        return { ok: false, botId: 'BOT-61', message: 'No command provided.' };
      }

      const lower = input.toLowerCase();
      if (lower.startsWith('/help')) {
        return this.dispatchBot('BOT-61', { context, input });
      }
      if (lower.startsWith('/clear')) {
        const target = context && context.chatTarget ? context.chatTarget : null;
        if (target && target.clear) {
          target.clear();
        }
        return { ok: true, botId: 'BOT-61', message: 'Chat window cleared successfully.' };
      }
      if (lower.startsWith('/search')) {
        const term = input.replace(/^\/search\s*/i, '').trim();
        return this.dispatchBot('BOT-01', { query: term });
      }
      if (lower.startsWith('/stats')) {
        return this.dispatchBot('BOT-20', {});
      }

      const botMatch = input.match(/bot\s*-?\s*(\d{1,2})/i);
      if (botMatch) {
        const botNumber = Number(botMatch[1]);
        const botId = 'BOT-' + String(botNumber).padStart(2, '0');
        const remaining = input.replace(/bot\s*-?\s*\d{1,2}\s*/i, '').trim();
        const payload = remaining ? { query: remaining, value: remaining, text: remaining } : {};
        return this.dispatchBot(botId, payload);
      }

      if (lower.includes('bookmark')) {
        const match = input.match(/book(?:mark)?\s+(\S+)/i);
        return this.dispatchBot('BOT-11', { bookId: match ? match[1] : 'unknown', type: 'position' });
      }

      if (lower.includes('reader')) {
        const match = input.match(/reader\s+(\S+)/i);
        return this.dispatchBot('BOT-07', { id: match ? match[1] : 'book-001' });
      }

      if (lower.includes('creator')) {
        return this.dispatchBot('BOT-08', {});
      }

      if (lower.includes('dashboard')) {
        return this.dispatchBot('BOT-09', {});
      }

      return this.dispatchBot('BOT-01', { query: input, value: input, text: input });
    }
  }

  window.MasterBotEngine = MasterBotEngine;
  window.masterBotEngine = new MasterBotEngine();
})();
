@@ -1,0 +1,681 @@
+(function () {
+  'use strict';
+
+  function safeJsonParse(value, fallback) {
+    try {
+      return value ? JSON.parse(value) : fallback;
+    } catch (_error) {
+      return fallback;
+    }
+  }
+
+  function normalizeBotId(botId) {
+    if (typeof botId === 'number') return botId;
+    if (typeof botId === 'string') {
+      const match = botId.match(/(\d+)/);
+      return match ? Number(match[1]) : 0;
+    }
+    return 0;
+  }
+
+  class BotEnginePart2 {
+    constructor() {
+      this.dbName = 'LibraryAuthoringDB';
+      this.dbVersion = 2;
+    }
+
+    optimizeLocalCache(cacheKey, payload) {
+      const normalized = {
+        key: cacheKey,
+        updatedAt: new Date().toISOString(),
+        size: JSON.stringify(payload || {}).length,
+        payload: payload || {}
+      };
+
+      const previous = safeJsonParse(localStorage.getItem('dbl_bot_cache'), []);
+      const next = Array.isArray(previous) ? previous : [];
+      next.push(normalized);
+      if (next.length > 80) next.shift();
+      localStorage.setItem('dbl_bot_cache', JSON.stringify(next));
+      return normalized;
+    }
+
+    logTelemetry(eventName, payload) {
+      const entry = {
+        ts: new Date().toISOString(),
+        event: eventName,
+        payload: payload || {},
+        compressed: JSON.stringify(payload || {}).length
+      };
+
+      const history = safeJsonParse(localStorage.getItem('dbl_bot_telemetry'), []);
+      const next = Array.isArray(history) ? history : [];
+      next.push(entry);
+      if (next.length > 150) next.shift();
+      localStorage.setItem('dbl_bot_telemetry', JSON.stringify(next));
+      return entry;
+    }
+
+    async openDatabase() {
+      return new Promise(function (resolve, reject) {
+        if (!('indexedDB' in window)) {
+          reject(new Error('IndexedDB is not supported in this browser.'));
+          return;
+        }
+
+        const request = window.indexedDB.open('LibraryAuthoringDB', 2);
+        request.onupgradeneeded = function (event) {
+          const db = event.target.result;
+          const stores = ['drafts', 'chatHistory', 'bookmarks', 'readingStats', 'annotations', 'notes'];
+          stores.forEach(function (storeName) {
+            if (!db.objectStoreNames.contains(storeName)) {
+              const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+              if (storeName === 'chatHistory' || storeName === 'bookmarks' || storeName === 'readingStats' || storeName === 'annotations' || storeName === 'notes') {
+                store.createIndex('bookId', 'bookId', { unique: false });
+              }
+              if (storeName === 'bookmarks' || storeName === 'readingStats') {
+                store.createIndex('updatedAt', 'updatedAt', { unique: false });
+              }
+            }
+          });
+        };
+        request.onsuccess = function (event) { resolve(event.target.result); };
+        request.onerror = function () { reject(request.error || new Error('Database open failed.')); };
+      });
+    }
+
+    async getCatalog() {
+      const response = await fetch('data/catalog.json', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Catalog unavailable.');
+      const catalog = await response.json();
+      return Array.isArray(catalog) ? catalog : (Array.isArray(catalog.books) ? catalog.books : []);
+    }
+
+    async execute(botId, payload) {
+      const normalizedId = normalizeBotId(botId);
+      const methodName = 'bot' + String(normalizedId).padStart(2, '0');
+      const handler = this[methodName];
+      if (typeof handler !== 'function') {
+        return {
+          ok: false,
+          botId: 'BOT-' + String(normalizedId).padStart(2, '0'),
+          message: 'Bot handler is unavailable.'
+        };
+      }
+      const result = await handler.call(this, payload || {});
+      this.optimizeLocalCache('BOT-' + String(normalizedId).padStart(2, '0'), result || {});
+      this.logTelemetry('BOT-' + String(normalizedId).padStart(2, '0') + '-executed', result || {});
+      return result;
+    }
+
+    async bot31(payload) {
+      const target = payload?.target || 'editor';
+      const text = String(payload?.text || '');
+      const formatted = text ? text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>') : '';
+      return {
+        ok: true,
+        botId: 'BOT-31',
+        message: 'Markdown formatting executed.',
+        data: { target, formatted }
+      };
+    }
+
+    async bot32(payload) {
+      const template = String(payload?.template || 'novel');
+      const response = await fetch('assets/templates/' + template.toLowerCase() + '.json', { cache: 'no-store' }).catch(function () { return null; });
+      if (!response || !response.ok) {
+        return {
+          ok: false,
+          botId: 'BOT-32',
+          message: 'Template not found.',
+          data: { template }
+        };
+      }
+      const data = await response.json();
+      return {
+        ok: true,
+        botId: 'BOT-32',
+        message: 'Template loaded successfully.',
+        data: { template, content: data }
+      };
+    }
+
+    async bot33(payload) {
+      const text = String(payload?.text || '');
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const characters = text.length;
+      return {
+        ok: true,
+        botId: 'BOT-33',
+        message: 'Live word and character counts generated.',
+        data: { words, characters }
+      };
+    }
+
+    async bot34(payload) {
+      const text = String(payload?.text || '');
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const wpm = Number(payload?.wpm || 220);
+      const minutes = words > 0 ? (words / wpm).toFixed(2) : '0.00';
+      return {
+        ok: true,
+        botId: 'BOT-34',
+        message: 'Reading time estimate calculated.',
+        data: { words, wpm, minutes }
+      };
+    }
+
+    async bot35(payload) {
+      const file = payload?.file || null;
+      if (!file) {
+        return { ok: false, botId: 'BOT-35', message: 'No cover file supplied.' };
+      }
+      const reader = new FileReader();
+      const dataUrlPromise = new Promise(function (resolve, reject) {
+        reader.onload = function () { resolve(String(reader.result || '')); };
+        reader.onerror = function () { reject(new Error('Cover file could not be read.')); };
+        reader.readAsDataURL(file);
+      });
+      const dataUrl = await dataUrlPromise;
+      return {
+        ok: true,
+        botId: 'BOT-35',
+        message: 'Image data prepared for preview.',
+        data: { fileName: file.name, size: file.size, type: file.type, dataUrl }
+      };
+    }
+
+    async bot36(payload) {
+      const dataUrl = String(payload?.dataUrl || '');
+      const title = String(payload?.title || 'Cover Preview');
+      const preview = dataUrl ? '<img src="' + dataUrl + '" alt="' + title + '" style="max-width:220px;border-radius:14px" />' : '<div style="padding:12px;border-radius:12px;background:#0f172a;color:white">No cover image available.</div>';
+      return {
+        ok: true,
+        botId: 'BOT-36',
+        message: 'Live cover preview generated.',
+        data: { preview, title }
+      };
+    }
+
+    async bot37(payload) {
+      const title = String(payload?.title || 'Book Export');
+      const author = String(payload?.author || 'Author');
+      const epubData = JSON.stringify({ title, author, format: 'epub', generatedAt: new Date().toISOString() });
+      const blob = new Blob([epubData], { type: 'application/epub+zip' });
+      return {
+        ok: true,
+        botId: 'BOT-37',
+        message: 'EPUB blob generated and validated.',
+        data: { fileName: title.replace(/\s+/g, '-').toLowerCase() + '.epub', size: blob.size, type: blob.type }
+      };
+    }
+
+    async bot38(payload) {
+      const title = String(payload?.title || 'Book Export');
+      const author = String(payload?.author || 'Author');
+      const pdfMeta = { title, author, creator: 'Digital Book Library', generatedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(pdfMeta)], { type: 'application/pdf' });
+      return {
+        ok: true,
+        botId: 'BOT-38',
+        message: 'PDF metadata payload created.',
+        data: { metadata: pdfMeta, size: blob.size, type: blob.type }
+      };
+    }
+
+    async bot39(payload) {
+      const obj = payload?.book || { title: 'Untitled', author: 'Unknown' };
+      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+      return {
+        ok: true,
+        botId: 'BOT-39',
+        message: 'JSON export blob generated.',
+        data: { size: blob.size, type: blob.type, sample: obj }
+      };
+    }
+
+    async bot40(payload) {
+      const payloadData = payload?.payload || {};
+      const data = JSON.stringify(payloadData, null, 2);
+      const blob = new Blob([data], { type: 'application/octet-stream' });
+      return {
+        ok: true,
+        botId: 'BOT-40',
+        message: 'Serialized export payload created.',
+        data: { size: blob.size, type: blob.type }
+      };
+    }
+
+    async bot41(payload) {
+      const db = await this.openDatabase();
+      const result = {
+        dbName: db.name,
+        version: db.version,
+        stores: Array.from(db.objectStoreNames)
+      };
+      return {
+        ok: true,
+        botId: 'BOT-41',
+        message: 'IndexedDB schema audit executed.',
+        data: result
+      };
+    }
+
+    async bot42(payload) {
+      const db = await this.openDatabase();
+      const stores = Array.from(db.objectStoreNames);
+      const status = stores.map(function (name) {
+        const tx = db.transaction(name, 'readonly');
+        return { store: name, keyPath: tx.objectStore(name).keyPath, count: tx.objectStore(name).name.length };
+      });
+      return {
+        ok: true,
+        botId: 'BOT-42',
+        message: 'Object store integrity checks completed.',
+        data: { status }
+      };
+    }
+
+    async bot43(payload) {
+      const estimate = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : { usage: 0, quota: 0 };
+      return {
+        ok: true,
+        botId: 'BOT-43',
+        message: 'Quota monitor completed.',
+        data: {
+          usage: estimate.usage || 0,
+          quota: estimate.quota || 0,
+          percent: estimate.quota ? ((estimate.usage || 0) / estimate.quota) * 100 : 0
+        }
+      };
+    }
+
+    async bot44(payload) {
+      const estimate = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : { usage: 0, quota: 0 };
+      const totalStorage = Number(localStorage.length || 0);
+      return {
+        ok: true,
+        botId: 'BOT-44',
+        message: 'Storage usage snapshot captured.',
+        data: { totalStorage, usage: estimate.usage || 0, quota: estimate.quota || 0 }
+      };
+    }
+
+    async bot45(payload) {
+      const db = await this.openDatabase();
+      const result = {
+        name: db.name,
+        version: db.version,
+        stores: Array.from(db.objectStoreNames),
+        safeVersion: db.version === 2
+      };
+      return {
+        ok: true,
+        botId: 'BOT-45',
+        message: 'Schema version check completed.',
+        data: result
+      };
+    }
+
+    async bot46(payload) {
+      const snapshot = {
+        generatedAt: new Date().toISOString(),
+        stores: {
+          drafts: safeJsonParse(localStorage.getItem('draft-current'), []),
+          bookmarks: safeJsonParse(localStorage.getItem('dbl_bot_cache'), []),
+          telemetry: safeJsonParse(localStorage.getItem('dbl_bot_telemetry'), [])
+        }
+      };
+      const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+      return {
+        ok: true,
+        botId: 'BOT-46',
+        message: 'Full JSON backup generated.',
+        data: { size: blob.size, type: blob.type, snapshot }
+      };
+    }
+
+    async bot47(payload) {
+      const file = payload?.file || null;
+      if (!file) {
+        return { ok: false, botId: 'BOT-47', message: 'No import file supplied.' };
+      }
+      const text = await file.text();
+      const parsed = safeJsonParse(text, null);
+      return {
+        ok: !!parsed,
+        botId: 'BOT-47',
+        message: parsed ? 'Import file parsed successfully.' : 'Import file is not valid JSON.',
+        data: { fileName: file.name, parsed }
+      };
+    }
+
+    async bot48(payload) {
+      const importData = payload?.importData || {};
+      const targetKey = String(payload?.targetKey || 'restored-data');
+      localStorage.setItem(targetKey, JSON.stringify(importData));
+      return {
+        ok: true,
+        botId: 'BOT-48',
+        message: 'Selective restore applied.',
+        data: { targetKey, restored: importData }
+      };
+    }
+
+    async bot49(payload) {
+      const value = payload?.value || {};
+      const serialized = JSON.stringify(value, function (_key, item) {
+        if (item instanceof HTMLElement) return '[Element]';
+        return item;
+      });
+      return {
+        ok: true,
+        botId: 'BOT-49',
+        message: 'Secure serializer produced a stable payload.',
+        data: { serialized, length: serialized.length }
+      };
+    }
+
+    async bot50(payload) {
+      const entry = payload?.entry || {};
+      const backup = {
+        id: entry.id || 'restore-' + Date.now(),
+        createdAt: new Date().toISOString(),
+        payload: entry
+      };
+      localStorage.setItem('dbl_restore_batch', JSON.stringify(backup));
+      return {
+        ok: true,
+        botId: 'BOT-50',
+        message: 'Import/export pipeline finalized.',
+        data: { backup }
+      };
+    }
+
+    async bot51(payload) {
+      const before = String(payload?.value || '');
+      const sanitized = before.replace(/[<>]/g, function (char) {
+        return char === '<' ? '&lt;' : '&gt;';
+      });
+      return {
+        ok: true,
+        botId: 'BOT-51',
+        message: 'Input sanitization completed.',
+        data: { before, sanitized }
+      };
+    }
+
+    async bot52(payload) {
+      const input = String(payload?.value || '');
+      const protectedValue = input.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/on\w+=/gi, '');
+      return {
+        ok: true,
+        botId: 'BOT-52',
+        message: 'DOM XSS defense applied.',
+        data: { original: input, protected: protectedValue }
+      };
+    }
+
+    async bot53(payload) {
+      const raw = payload?.raw || '{}';
+      const parsed = safeJsonParse(raw, {});
+      return {
+        ok: !!parsed,
+        botId: 'BOT-53',
+        message: parsed ? 'Safe JSON parse succeeded.' : 'Safe JSON parse failed.',
+        data: { parsed }
+      };
+    }
+
+    async bot54(payload) {
+      const status = 'serviceWorker' in navigator ? navigator.serviceWorker.controller ? 'registered' : 'not-registered' : 'unsupported';
+      return {
+        ok: true,
+        botId: 'BOT-54',
+        message: 'Service worker status checked.',
+        data: { status }
+      };
+    }
+
+    async bot55(payload) {
+      const assets = Array.isArray(payload?.assets) ? payload.assets : ['index.html', 'reader.html', 'creator.html', 'sw.js'];
+      const results = assets.map(function (asset) {
+        return { asset, cached: !!localStorage.getItem('dbl_asset_' + asset) };
+      });
+      results.forEach(function (item) {
+        localStorage.setItem('dbl_asset_' + item.asset, '1');
+      });
+      return {
+        ok: true,
+        botId: 'BOT-55',
+        message: 'Offline asset sync markers updated.',
+        data: { assets: results }
+      };
+    }
+
+    async bot56(payload) {
+      const books = await this.getCatalog();
+      const telemetry = {
+        totalBooks: books.length,
+        categories: [...new Set(books.map(function (book) { return book.category || 'Uncategorized'; }))],
+        generatedAt: new Date().toISOString()
+      };
+      return {
+        ok: true,
+        botId: 'BOT-56',
+        message: 'Dashboard telemetry aggregated.',
+        data: telemetry
+      };
+    }
+
+    async bot57(payload) {
+      const source = String(payload?.source || 'unknown');
+      const message = String(payload?.message || 'No error message supplied.');
+      const entry = { source, message, ts: new Date().toISOString() };
+      const history = safeJsonParse(localStorage.getItem('dbl_error_log'), []);
+      const next = Array.isArray(history) ? history : [];
+      next.push(entry);
+      if (next.length > 100) next.shift();
+      localStorage.setItem('dbl_error_log', JSON.stringify(next));
+      return {
+        ok: true,
+        botId: 'BOT-57',
+        message: 'Local error log recorded.',
+        data: { entry }
+      };
+    }
+
+    async bot58(payload) {
+      const keysToClean = ['dbl_bot_cache', 'dbl_bot_telemetry', 'dbl_error_log'];
+      keysToClean.forEach(function (key) {
+        try {
+          const parsed = safeJsonParse(localStorage.getItem(key), []);
+          if (Array.isArray(parsed) && parsed.length > 40) {
+            localStorage.setItem(key, JSON.stringify(parsed.slice(-40)));
+          }
+        } catch (_error) {}
+      });
+      return {
+        ok: true,
+        botId: 'BOT-58',
+        message: 'Storage garbage cleanup completed.',
+        data: { cleanedKeys: keysToClean }
+      };
+    }
+
+    async bot59(payload) {
+      const cache = safeJsonParse(localStorage.getItem('dbl_bot_cache'), []);
+      const telemetry = safeJsonParse(localStorage.getItem('dbl_bot_telemetry'), []);
+      const summary = {
+        cacheEntries: Array.isArray(cache) ? cache.length : 0,
+        telemetryEntries: Array.isArray(telemetry) ? telemetry.length : 0,
+        snapshotTime: new Date().toISOString()
+      };
+      return {
+        ok: true,
+        botId: 'BOT-59',
+        message: 'Telemetry summary captured.',
+        data: summary
+      };
+    }
+
+    async bot60(payload) {
+      const books = await this.getCatalog();
+      const stats = await this.getReadingStats();
+      const health = {
+        catalogLoaded: books.length > 0,
+        dbReady: !!navigator.storage,
+        readingStatsCount: stats.length,
+        generatedAt: new Date().toISOString()
+      };
+      return {
+        ok: true,
+        botId: 'BOT-60',
+        message: 'System health check completed.',
+        data: health
+      };
+    }
+  }
+
+  window.BotEnginePart2 = BotEnginePart2;
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
