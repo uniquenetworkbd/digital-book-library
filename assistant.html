@@ -3,177 +3,108 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Digital Book Library Assistant</title>
+    <title>Master Assistant Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      body {
-        background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #1f2937 100%);
-      }
-      .glass {
-        background: rgba(15, 23, 42, 0.78);
-        backdrop-filter: blur(12px);
-      }
-      .bot-card {
-        border: 1px solid rgba(148, 163, 184, 0.18);
-      }
-      .message-scroll::-webkit-scrollbar {
-        width: 8px;
-      }
-      .message-scroll::-webkit-scrollbar-thumb {
-        background: rgba(148, 163, 184, 0.45);
-        border-radius: 9999px;
-      }
-    </style>
+    <link rel="stylesheet" href="assets/css/main.css" />
   </head>
-  <body class="min-h-screen text-slate-100 antialiased">
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <header class="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 shadow-2xl shadow-slate-950/30 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p class="text-xs uppercase tracking-[0.25em] text-cyan-300">Digital Book Library</p>
-          <h1 class="mt-2 text-2xl font-semibold text-white">Master Assistant Console</h1>
-        </div>
-        <div class="flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-100">
-          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          61-Bot network online
-        </div>
-      </header>
+  <body class="app-shell">
+    <header class="top-nav">
+      <div class="container nav-inner">
+        <a href="index.html" class="brand-mark">
+          <span class="brand-icon">📚</span>
+          <span>Digital Book Library</span>
+        </a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html">Library</a>
+          <a href="creator.html">Creator</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="assistant.html" class="active">Assistant</a>
+        </nav>
+      </div>
+    </header>
 
-      <main class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <section class="glass rounded-3xl border border-slate-700/60 p-4 shadow-xl shadow-slate-950/20">
-          <div class="mb-4 flex items-center justify-between border-b border-slate-700/60 pb-3">
+    <main class="container py-8">
+      <section class="assistant-layout glass-card">
+        <div class="assistant-sidebar">
+          <div class="sidebar-header">
+            <p class="eyebrow">61-bot system</p>
+            <h1>Assistant Console</h1>
+          </div>
+          <div class="bot-list">
+            <div class="bot-pill online">BOT-01 → BOT-30</div>
+            <div class="bot-pill online">BOT-31 → BOT-60</div>
+            <div class="bot-pill online">BOT-61</div>
+          </div>
+          <div class="assistant-status">
+            <span class="live-dot"></span>
+            System online
+          </div>
+        </div>
+
+        <div class="assistant-chat-panel">
+          <div class="chat-header">
             <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Conversation</p>
-              <h2 class="mt-1 text-lg font-medium text-white">Assistant Chat</h2>
+              <p class="eyebrow">Conversation</p>
+              <h2>Master assistant</h2>
             </div>
-            <button id="clearChat" class="rounded-full border border-slate-600 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-400 hover:text-cyan-100">Clear</button>
+            <button id="clearChat" class="secondary-btn small">Clear</button>
           </div>
 
-          <div id="chatWindow" class="message-scroll flex h-[520px] flex-col gap-3 overflow-y-auto rounded-2xl bg-slate-950/60 p-3">
-            <div class="max-w-lg rounded-2xl rounded-bl-sm border border-cyan-500/20 bg-cyan-500/10 p-3 text-sm text-cyan-50">
-              Hello! I am the Digital Book Library master assistant. Ask me for a search, status, or direct command such as BOT-01 or /status.
-            </div>
-          </div>
+          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
 
-          <form id="assistantForm" class="mt-4 flex flex-col gap-3 sm:flex-row">
-            <input id="assistantInput" type="text" placeholder="Type a request, BOT-XX, or /status..." class="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30" />
-            <button type="submit" class="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400">Send</button>
+          <form id="chatForm" class="chat-form">
+            <input id="chatInput" type="text" placeholder="Ask about books, stats, or help..." autocomplete="off" />
+            <button type="submit" class="primary-btn">Send</button>
           </form>
-        </section>
+        </div>
+      </section>
+    </main>
 
-        <aside class="space-y-6">
-          <section class="glass rounded-3xl border border-slate-700/60 p-4 shadow-xl shadow-slate-950/20">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Runtime</p>
-            <div class="mt-4 space-y-3">
-              <div class="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2">
-                <span class="text-sm text-slate-300">Engine</span>
-                <span id="engineName" class="text-sm font-medium text-cyan-300">BOT-61</span>
-              </div>
-              <div class="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2">
-                <span class="text-sm text-slate-300">Total bots</span>
-                <span id="botCount" class="text-sm font-medium text-white">0</span>
-              </div>
-              <div class="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2">
-                <span class="text-sm text-slate-300">Uptime</span>
-                <span id="uptime" class="text-sm font-medium text-white">--</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="glass rounded-3xl border border-slate-700/60 p-4 shadow-xl shadow-slate-950/20">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Bot registry</p>
-            <div id="botList" class="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-300"></div>
-          </section>
-        </aside>
-      </main>
-    </div>
-
-    <script src="assets/js/bot-engine-part1.js" defer></script>
-    <script src="assets/js/bot-engine-part2.js" defer></script>
-    <script src="assets/js/complete-bot-engine.js" defer></script>
+    <script src="assets/js/bot-engine-part1.js"></script>
+    <script src="assets/js/bot-engine-part2.js"></script>
+    <script src="assets/js/complete-bot-engine.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        const chatWindow = document.getElementById('chatWindow');
-        const assistantForm = document.getElementById('assistantForm');
-        const assistantInput = document.getElementById('assistantInput');
-        const clearChatButton = document.getElementById('clearChat');
-        const botList = document.getElementById('botList');
-        const engineName = document.getElementById('engineName');
-        const botCount = document.getElementById('botCount');
-        const uptime = document.getElementById('uptime');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const clearChat = document.getElementById('clearChat');
+        const engine = window.MasterBotEngine ? new window.MasterBotEngine() : (window.completeBotEngine || null);
 
-        const addMessage = (sender, text) => {
-          const wrapper = document.createElement('div');
-          const classes = {
-            assistant: 'max-w-lg rounded-2xl rounded-bl-sm border border-cyan-500/20 bg-cyan-500/10 p-3 text-sm text-cyan-50',
-            user: 'ml-auto max-w-lg rounded-2xl rounded-br-sm border border-slate-700 bg-slate-800 p-3 text-sm text-slate-100',
-            system: 'max-w-lg rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-50'
-          };
-          wrapper.className = classes[sender] || classes.assistant;
-          wrapper.innerHTML = '<div class="whitespace-pre-wrap">' + String(text).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])) + '</div>';
-          chatWindow.appendChild(wrapper);
-          chatWindow.scrollTop = chatWindow.scrollHeight;
+        const appendMessage = (role, text) => {
+          const item = document.createElement('div');
+          item.className = `chat-message ${role}`;
+          item.textContent = text;
+          chatMessages.appendChild(item);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
         };
 
-        const renderBotList = () => {
-          if (!window.MasterBotEngine) {
-            return;
-          }
-          const registry = Array.from(window.MasterBotEngine.registry.values()).slice(0, 18);
-          botList.innerHTML = registry.map((bot) => {
-            const label = bot.label || `BOT-${String(bot.id).padStart(2, '0')}`;
-            return `<div class="rounded-lg border border-slate-700 bg-slate-900/60 px-2 py-2 text-center font-medium text-slate-200">${label}</div>`;
-          }).join('');
-          botCount.textContent = String(window.MasterBotEngine.registry.size);
-        };
+        appendMessage('assistant', 'Hello! I can help you discover books, check reading stats, and explain library commands. Try /help or ask “hello”.');
 
-        const updateStatus = () => {
-          if (!window.MasterBotEngine) {
-            return;
-          }
-          engineName.textContent = 'BOT-61';
-          const elapsed = Date.now() - window.MasterBotEngine.startTime;
-          const minutes = Math.floor(elapsed / 60000);
-          const seconds = Math.floor((elapsed % 60000) / 1000);
-          uptime.textContent = `${minutes}m ${seconds}s`;
-        };
+        clearChat?.addEventListener('click', () => {
+          chatMessages.innerHTML = '';
+          appendMessage('assistant', 'Chat cleared. Ready for a new request.');
+        });
 
-        const processInput = (rawInput) => {
-          const input = String(rawInput || '').trim();
-          if (!input) return;
-          addMessage('user', input);
-          assistantInput.value = '';
-
-          if (!window.MasterBotEngine) {
-            addMessage('assistant', 'Master bot engine is unavailable.');
-            return;
-          }
-
-          try {
-            const response = window.MasterBotEngine.route(input, {});
-            const messageText = response && response.message ? response.message : 'The assistant is ready.';
-            addMessage('assistant', messageText);
-            if (response && (response.data && (response.data.registrySize || response.data.totalBots))) {
-              renderBotList();
-            }
-          } catch (error) {
-            addMessage('system', `Runtime exception: ${error.message || 'Unknown error'}`);
-          }
-
-          updateStatus();
-        };
-
-        assistantForm.addEventListener('submit', (event) => {
+        chatForm?.addEventListener('submit', async (event) => {
           event.preventDefault();
-          processInput(assistantInput.value);
-        });
+          const rawValue = chatInput.value.trim();
+          if (!rawValue) return;
+          appendMessage('user', rawValue);
+          chatInput.value = '';
 
-        clearChatButton.addEventListener('click', () => {
-          chatWindow.innerHTML = '<div class="max-w-lg rounded-2xl rounded-bl-sm border border-cyan-500/20 bg-cyan-500/10 p-3 text-sm text-cyan-50">Assistant context cleared. Ready for the next request.</div>';
-          assistantInput.focus();
-        });
+          let response = 'I can help with discovery, stats, and reading flow.';
+          if (engine && typeof engine.handleInput === 'function') {
+            const result = await engine.handleInput(rawValue, { source: 'assistant.html' });
+            response = result && result.message ? result.message : response;
+          } else {
+            response = rawValue.toLowerCase().includes('hello') || rawValue.toLowerCase().includes('hi')
+              ? 'Hello! I’m your digital library assistant. How can I help today?'
+              : response;
+          }
 
-        renderBotList();
-        updateStatus();
+          appendMessage('assistant', response);
+        });
       });
     </script>
   </body>

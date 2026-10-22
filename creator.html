@@ -1,1 +1,197 @@
-<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Create and publish books in Digital Book Library"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#18202a"><title>Book Creator</title><link rel="stylesheet" href="assets/css/main.css"><link rel="stylesheet" href="assets/css/editor.css"><link rel="stylesheet" href="assets/css/bot.css"></head><body><header class="site-header"><div class="container header-inner"><a class="brand" href="index.html">← লাইব্রেরি</a><div class="editor-status"><span id="saveStatus">Saved locally</span></div></div></header><main class="creator-shell container"><section class="creator-toolbar"><div><p class="eyebrow">Book Authoring</p><h1>নতুন বই তৈরি করুন</h1></div><div class="toolbar-actions"><button id="exportPdfButton" type="button">Export PDF</button><button id="exportEpubButton" type="button">Export EPUB</button><button id="publishButton" type="button" class="primary">Publish to Library</button></div></section><section class="metadata-grid"><label>বইয়ের নাম<input id="bookTitle" type="text" placeholder="নতুন বই"></label><label>লেখক<input id="bookAuthor" type="text" placeholder="লেখকের নাম"></label><label>ক্যাটাগরি<select id="bookCategory"><option value="Novel">Novel</option><option value="Technical">Technical</option><option value="Research">Research</option></select></label></section><section class="cover-panel"><div><strong>Custom Cover</strong><p class="status">PNG/JPEG/WebP • লোকাল ব্রাউজারেই সংরক্ষিত</p></div><input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp"><img id="coverPreview" class="cover-preview" alt="কাস্টম কভার প্রিভিউ" hidden></section><div id="publisherPanel" class="publisher-panel" hidden><h2>Publish Settings</h2><p>প্রকাশের JSON ও GitHub commit নির্দেশিকা তৈরি করতে তথ্য দিন।</p><label>Repository owner<input id="repoOwner" type="text" placeholder="GitHub username"></label><label>Repository name<input id="repoName" type="text" value="digital-book-library"></label><label>GitHub Personal Access Token<input id="githubToken" type="password" autocomplete="off" placeholder="ঐচ্ছিক; ব্রাউজারে সংরক্ষণ করা হবে না"></label></div><div class="editor-layout"><aside class="chapter-panel"><div class="panel-heading"><h2>চ্যাপ্টার</h2><button id="addChapter" type="button">+ যোগ</button></div><ol id="chapterList" class="chapter-list"></ol></aside><section class="writing-panel"><div class="format-toolbar" aria-label="ফরম্যাটিং"><button type="button" data-format="paragraph">¶</button><button type="button" data-format="heading">H</button><button type="button" data-format="bold"><strong>B</strong></button><button type="button" data-format="italic"><em>I</em></button><button type="button" data-format="code">&lt;/&gt;</button></div><label class="sr-only" for="chapterTitle">অধ্যায়ের নাম</label><input id="chapterTitle" class="chapter-title-input" type="text" placeholder="অধ্যায়ের নাম"><textarea id="chapterContent" class="writing-area" placeholder="Markdown লিখুন..."></textarea><div class="editor-metrics" aria-live="polite"><span>Words: <strong id="live-word-count">0</strong></span><span>Characters: <strong id="live-char-count">0</strong></span></div></section><aside class="preview-panel"><div class="panel-heading"><h2>Live Preview</h2></div><article id="livePreview" class="preview-content"></article></aside></div><section id="publishOutput" class="publish-output" hidden></section></main><script src="assets/js/ui-enhancements.js"></script><script src="assets/js/ai-engine.js"></script><script src="assets/js/tts-engine.js"></script><script src="assets/js/backup-engine.js"></script><script src="assets/js/complete-bot-engine.js"></script><script src="assets/js/bot.js"></script><script src="assets/js/pwa.js"></script><script type="module" src="assets/js/editor.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creator Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body class="app-shell">
+    <header class="top-nav">
+      <div class="container nav-inner">
+        <a href="index.html" class="brand-mark">
+          <span class="brand-icon">📚</span>
+          <span>Digital Book Library</span>
+        </a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html">Library</a>
+          <a href="creator.html" class="active">Creator</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="assistant.html">Assistant</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container py-8">
+      <section class="page-header glass-card mb-6">
+        <div>
+          <p class="eyebrow">Authoring suite</p>
+          <h1>Creator Studio</h1>
+        </div>
+        <div class="status-pill success">Auto-save enabled</div>
+      </section>
+
+      <div class="creator-layout">
+        <aside class="glass-card panel-stack">
+          <div class="panel-section">
+            <label class="field-wrap">
+              <span>Book title</span>
+              <input id="bookTitle" type="text" placeholder="My new story" />
+            </label>
+          </div>
+          <div class="panel-section">
+            <label class="field-wrap">
+              <span>Author</span>
+              <input id="bookAuthor" type="text" placeholder="Author name" />
+            </label>
+          </div>
+          <div class="panel-section">
+            <label class="field-wrap">
+              <span>Category</span>
+              <select id="bookCategory">
+                <option>Fiction</option>
+                <option>Technology</option>
+                <option>Science</option>
+                <option>History</option>
+                <option>Self Development</option>
+              </select>
+            </label>
+          </div>
+          <div class="panel-section">
+            <label class="field-wrap">
+              <span>Cover image</span>
+              <input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp" />
+            </label>
+            <img id="coverPreview" class="cover-preview hidden" alt="Cover preview" />
+          </div>
+          <div class="panel-section">
+            <button id="addChapter" class="primary-btn full-width">Add chapter</button>
+          </div>
+        </aside>
+
+        <section class="glass-card editor-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Draft workspace</p>
+              <h2>Book editor</h2>
+            </div>
+            <div id="saveStatus" class="status-pill muted">Ready</div>
+          </div>
+
+          <div class="chapter-tools">
+            <div class="chapter-list-wrap">
+              <ul id="chapterList" class="chapter-list"></ul>
+            </div>
+            <div class="chapter-editor">
+              <label class="field-wrap">
+                <span>Chapter title</span>
+                <input id="chapterTitle" type="text" placeholder="Chapter title" />
+              </label>
+              <div class="format-actions">
+                <button type="button" data-format="bold">Bold</button>
+                <button type="button" data-format="italic">Italic</button>
+                <button type="button" data-format="h2">H2</button>
+                <button type="button" data-format="quote">Quote</button>
+              </div>
+              <textarea id="chapterContent" rows="18" placeholder="Write your chapter here..."></textarea>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="exportPdfButton" type="button" class="secondary-btn">Export PDF</button>
+            <button id="exportEpubButton" type="button" class="secondary-btn">Export EPUB</button>
+            <button id="publishButton" type="button" class="primary-btn">Publish package</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="packageModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div class="modal-panel glass-card">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Package output</p>
+            <h3>Publication package</h3>
+          </div>
+          <button id="closePackageModal" type="button" class="icon-close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="toast success" id="packageToast">JSON generated successfully.</div>
+          <textarea id="packageOutput" readonly rows="18"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button id="copyPackageBtn" type="button" class="secondary-btn">Copy JSON</button>
+          <button id="downloadPackageBtn" type="button" class="primary-btn">Download</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="assets/js/editor.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('packageModal');
+        const output = document.getElementById('packageOutput');
+        const downloadBtn = document.getElementById('downloadPackageBtn');
+        const copyBtn = document.getElementById('copyPackageBtn');
+        const closeBtn = document.getElementById('closePackageModal');
+        const publishBtn = document.getElementById('publishButton');
+
+        const showModal = (jsonObject) => {
+          output.value = JSON.stringify(jsonObject, null, 2);
+          modal.classList.remove('hidden');
+          modal.setAttribute('aria-hidden', 'false');
+        };
+
+        const hideModal = () => {
+          modal.classList.add('hidden');
+          modal.setAttribute('aria-hidden', 'true');
+        };
+
+        publishBtn?.addEventListener('click', () => {
+          const book = {
+            id: `book-${Date.now()}`,
+            title: document.getElementById('bookTitle')?.value || 'Untitled Book',
+            author: document.getElementById('bookAuthor')?.value || 'Unknown Author',
+            category: document.getElementById('bookCategory')?.value || 'Fiction',
+            coverImage: document.getElementById('coverPreview')?.src || '',
+            chapters: Array.from(document.querySelectorAll('.chapter-item')).map((item) => ({
+              title: item.dataset.title || 'Chapter',
+              content: item.dataset.content || ''
+            })),
+            publishedAt: new Date().toISOString()
+          };
+          showModal(book);
+        });
+
+        closeBtn?.addEventListener('click', hideModal);
+        modal?.addEventListener('click', (event) => {
+          if (event.target.dataset.closeModal === 'true') hideModal();
+        });
+        copyBtn?.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(output.value);
+            const toast = document.getElementById('packageToast');
+            if (toast) {
+              toast.textContent = 'JSON copied to clipboard.';
+              toast.classList.add('visible');
+              setTimeout(() => toast.classList.remove('visible'), 2000);
+            }
+          } catch (error) {
+            console.error('Copy failed', error);
+          }
+        });
+        downloadBtn?.addEventListener('click', () => {
+          const blob = new Blob([output.value], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = 'library-package.json';
+          anchor.click();
+          URL.revokeObjectURL(url);
+        });
+      });
+    </script>
+  </body>
+</html>

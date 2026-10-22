@@ -1,14 +1,106 @@
 <!doctype html>
-<html lang="bn">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Digital Book Library — browse, search and read books.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.telegram.org; worker-src 'self';">
-  <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#18202a"><title>Digital Book Library</title>
-  <link rel="stylesheet" href="assets/css/main.css"><link rel="stylesheet" href="assets/css/bot.css">
-</head>
-<body>
-<header class="site-header"><div class="container header-inner"><a class="brand" href="index.html">📚 Digital Book Library</a><nav aria-label="প্রধান নেভিগেশন"><a href="index.html">লাইব্রেরি</a><a href="creator.html">বই লিখুন</a><a href="dashboard.html">ড্যাশবোর্ড</a></nav></div></header>
-<main class="container"><section class="hero"><p class="eyebrow">Client-side Digital Library</p><h1>আপনার বইয়ের লাইব্রেরি</h1><p>বই খুঁজুন, ক্যাটাগরি/ট্যাগ দিয়ে ফিল্টার করুন এবং উন্নত ক্রমে সাজিয়ে ব্রাউজারেই পড়ুন।</p></section><section class="library-controls" aria-label="লাইব্রেরি নিয়ন্ত্রণ"><label class="search-field">🔎<span class="sr-only">বই, লেখক বা ট্যাগ খুঁজুন</span><input id="searchInput" type="search" placeholder="বইয়ের নাম, লেখক বা ট্যাগ..." autocomplete="off"></label><label><span class="sr-only">ক্যাটাগরি</span><select id="categoryFilter"><option value="all">সব ক্যাটাগরি</option><option value="Literature">Literature</option><option value="Technical">Technical</option><option value="Novel">Novel</option><option value="Research">Research</option></select></label><label><span class="sr-only">অতিরিক্ত ট্যাগ</span><input id="tagFilter" type="search" placeholder="ট্যাগ: ai, research..." autocomplete="off"></label><label><span class="sr-only">সাজানোর ক্রম</span><select id="sortFilter"><option value="title-asc">শিরোনাম: A→Z</option><option value="title-desc">শিরোনাম: Z→A</option><option value="date-desc">প্রকাশকাল: নতুন→পুরনো</option><option value="date-asc">প্রকাশকাল: পুরনো→নতুন</option><option value="rating-desc">রেটিং: বেশি→কম</option><option value="readingTime-asc">পড়ার সময়: কম→বেশি</option></select></label></section><p id="catalogStatus" class="status" role="status">ক্যাটালগ লোড হচ্ছে...</p><section id="bookGrid" class="book-grid" aria-live="polite"></section></main><footer class="site-footer"><div class="container">GitHub Pages • Vanilla JavaScript • JSON • IndexedDB</div></footer>
-<script src="assets/js/ui-enhancements.js"></script><script src="assets/js/ai-engine.js"></script><script src="assets/js/tts-engine.js"></script><script src="assets/js/backup-engine.js"></script><script src="assets/js/complete-bot-engine.js"></script><script src="assets/js/bot.js"></script><script src="assets/js/pwa.js"></script><script type="module" src="assets/js/app.js"></script>
-</body></html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Digital Book Library catalog and reading discovery" />
+    <title>Digital Book Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body class="app-shell">
+    <header class="top-nav">
+      <div class="container nav-inner">
+        <a href="index.html" class="brand-mark">
+          <span class="brand-icon">📚</span>
+          <span>Digital Book Library</span>
+        </a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html" class="active">Library</a>
+          <a href="creator.html">Creator</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="assistant.html">Assistant</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container py-8 md:py-10">
+      <section class="hero glass-card mb-6">
+        <div class="hero-content">
+          <div>
+            <p class="eyebrow">Client-side digital reading platform</p>
+            <h1>Discover books, build drafts, and track your reading.</h1>
+            <p class="subtext">
+              Explore your library, refine by category, and jump into a focused reading environment without leaving the app.
+            </p>
+            <div class="hero-actions">
+              <a href="creator.html" class="primary-btn">Start authoring</a>
+              <a href="assistant.html" class="secondary-btn">Open assistant</a>
+            </div>
+          </div>
+          <div class="hero-panel glass-panel">
+            <div class="metric-row">
+              <span class="metric-label">Total books</span>
+              <strong id="totalBooksMetric">128</strong>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Reading hours</span>
+              <strong id="readingHoursMetric">22.4h</strong>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Active reading streak</span>
+              <strong id="streakMetric">12 days</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="toolbar glass-card mb-6">
+        <div class="toolbar-grid">
+          <label class="field-wrap wide">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Search by title, author, or topic" />
+          </label>
+          <label class="field-wrap">
+            <span>Category</span>
+            <select id="categoryFilter">
+              <option value="all">All categories</option>
+              <option value="Fiction">Fiction</option>
+              <option value="Technology">Technology</option>
+              <option value="Science">Science</option>
+              <option value="History">History</option>
+              <option value="Self Development">Self Development</option>
+            </select>
+          </label>
+          <label class="field-wrap">
+            <span>Tags</span>
+            <input id="tagFilter" type="text" placeholder="e.g. AI, design" />
+          </label>
+          <label class="field-wrap">
+            <span>Sort</span>
+            <select id="sortFilter">
+              <option value="title-asc">Title A–Z</option>
+              <option value="title-desc">Title Z–A</option>
+              <option value="date-desc">Newest first</option>
+              <option value="rating-desc">Highest rated</option>
+              <option value="readingTime-asc">Shortest read</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="catalog-header mb-4">
+        <div>
+          <p class="eyebrow">Library catalog</p>
+          <h2>Browse the collection</h2>
+        </div>
+        <p id="catalogStatus" class="status-pill">Loading books…</p>
+      </section>
+
+      <section id="bookGrid" class="book-grid" aria-live="polite"></section>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/complete-bot-engine.js"></script>
+  </body>
+</html>
