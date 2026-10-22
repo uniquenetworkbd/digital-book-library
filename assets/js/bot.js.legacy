@@ -1,0 +1,35 @@
+/* Digital Book Library v2.0 — floating bot widget + command router. */
+(function () {
+  'use strict';
+
+  const legacyCommandMap = {
+    search: 1,
+    stats: 34,
+    help: 54,
+    clear: 60,
+    backup: 55,
+    restore: 56,
+    dashboard: 6,
+    bookmarks: 6,
+    reader: 6,
+    creator: 6
+  };
+
+  function safeLegacyNoop() {
+    return {
+      ok: true,
+      botId: 'LEGACY-OUT',
+      message: 'Legacy bot widget is disabled. The new assistant UI is available at assistant.html.',
+      code: 'LEGACY_DISABLED'
+    };
+  }
+
+  window.DBLLegacyBot = {
+    __compatibility: 'legacy-guard',
+    init: safeLegacyNoop,
+    handle: safeLegacyNoop,
+    processQuery: safeLegacyNoop,
+    route: safeLegacyNoop,
+    commandMap: legacyCommandMap
+  };
+})();
