@@ -1,106 +1,61 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Digital Book Library catalog and reading discovery" />
-    <title>Digital Book Library</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/css/main.css" />
-  </head>
-  <body class="app-shell">
-    <header class="top-nav">
-      <div class="container nav-inner">
-        <a href="index.html" class="brand-mark">
-          <span class="brand-icon">📚</span>
-          <span>Digital Book Library</span>
-        </a>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="index.html" class="active">Library</a>
-          <a href="creator.html">Creator</a>
-          <a href="dashboard.html">Dashboard</a>
-          <a href="assistant.html">Assistant</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="container py-8 md:py-10">
-      <section class="hero glass-card mb-6">
-        <div class="hero-content">
-          <div>
-            <p class="eyebrow">Client-side digital reading platform</p>
-            <h1>Discover books, build drafts, and track your reading.</h1>
-            <p class="subtext">
-              Explore your library, refine by category, and jump into a focused reading environment without leaving the app.
-            </p>
-            <div class="hero-actions">
-              <a href="creator.html" class="primary-btn">Start authoring</a>
-              <a href="assistant.html" class="secondary-btn">Open assistant</a>
-            </div>
-          </div>
-          <div class="hero-panel glass-panel">
-            <div class="metric-row">
-              <span class="metric-label">Total books</span>
-              <strong id="totalBooksMetric">128</strong>
-            </div>
-            <div class="metric-row">
-              <span class="metric-label">Reading hours</span>
-              <strong id="readingHoursMetric">22.4h</strong>
-            </div>
-            <div class="metric-row">
-              <span class="metric-label">Active reading streak</span>
-              <strong id="streakMetric">12 days</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="toolbar glass-card mb-6">
-        <div class="toolbar-grid">
-          <label class="field-wrap wide">
-            <span>Search</span>
-            <input id="searchInput" type="search" placeholder="Search by title, author, or topic" />
-          </label>
-          <label class="field-wrap">
-            <span>Category</span>
-            <select id="categoryFilter">
-              <option value="all">All categories</option>
-              <option value="Fiction">Fiction</option>
-              <option value="Technology">Technology</option>
-              <option value="Science">Science</option>
-              <option value="History">History</option>
-              <option value="Self Development">Self Development</option>
-            </select>
-          </label>
-          <label class="field-wrap">
-            <span>Tags</span>
-            <input id="tagFilter" type="text" placeholder="e.g. AI, design" />
-          </label>
-          <label class="field-wrap">
-            <span>Sort</span>
-            <select id="sortFilter">
-              <option value="title-asc">Title A–Z</option>
-              <option value="title-desc">Title Z–A</option>
-              <option value="date-desc">Newest first</option>
-              <option value="rating-desc">Highest rated</option>
-              <option value="readingTime-asc">Shortest read</option>
-            </select>
-          </label>
-        </div>
-      </section>
-
-      <section class="catalog-header mb-4">
-        <div>
-          <p class="eyebrow">Library catalog</p>
-          <h2>Browse the collection</h2>
-        </div>
-        <p id="catalogStatus" class="status-pill">Loading books…</p>
-      </section>
-
-      <section id="bookGrid" class="book-grid" aria-live="polite"></section>
-    </main>
-
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/complete-bot-engine.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b1c">
+  <title>Open Shelf | Digital Book Library</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <header class="top-nav"><nav class="container nav-inner" aria-label="Main navigation">
+    <a class="brand-mark" href="index.html"><span class="brand-icon" aria-hidden="true">OS</span><span>Open Shelf</span></a>
+    <div class="nav-links"><a class="active" aria-current="page" href="index.html">Library</a><a href="creator.html">Creator</a><a href="reader.html">Reader</a><a href="dashboard.html">Dashboard</a><a href="assistant.html">Assistant</a></div>
+  </nav></header>
+  <main class="container page">
+    <section class="page-heading"><div><p class="kicker">A quieter place to read</p><h1>Find your next<br>good book.</h1><p>Browse your local collection, pick up where you left off, or shape a new book of your own.</p></div><a class="primary-btn" href="creator.html">Create a book <span aria-hidden="true">+</span></a></section>
+    <section class="panel panel-pad" aria-label="Library collection">
+      <div class="section-heading" style="margin-top:0"><h2>Library</h2><span id="catalog-status" class="muted" role="status">Loading collection…</span></div>
+      <div class="library-toolbar"><label class="field-wrap"><span>Search titles and authors</span><input id="book-search" type="search" placeholder="Try a title, author, or subject"></label><label class="field-wrap"><span>Collection</span><select id="book-category"><option value="">All categories</option></select></label></div>
+      <div id="book-grid" class="book-grid" aria-live="polite"></div>
+    </section>
+    <p class="footer-note">Your reading data stays in this browser.</p>
+  </main>
+  <script>
+    (() => {
+      const grid = document.querySelector('#book-grid');
+      const status = document.querySelector('#catalog-status');
+      const search = document.querySelector('#book-search');
+      const category = document.querySelector('#book-category');
+      let books = [];
+      const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+      function render() {
+        const query = search.value.trim().toLocaleLowerCase();
+        const selected = category.value;
+        const matches = books.filter((book) => `${book.title || ''} ${book.author || ''} ${book.category || ''}`.toLocaleLowerCase().includes(query) && (!selected || book.category === selected));
+        status.textContent = `${matches.length} ${matches.length === 1 ? 'book' : 'books'}`;
+        if (!matches.length) {
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">${books.length ? 'No books match those filters.' : 'Your collection is empty. Publish a book from Creator to see it here.'}</div>`;
+          return;
+        }
+        grid.innerHTML = matches.map((book) => `<article class="book-card"><div class="book-cover">${book.coverImage ? `<img src="${esc(book.coverImage)}" alt="Cover of ${esc(book.title)}" loading="lazy">` : '<span aria-hidden="true">BOOK</span>'}</div><div class="book-card-body"><p class="kicker">${esc(book.category || 'Uncategorized')}</p><h3>${esc(book.title || 'Untitled')}</h3><p class="muted">${esc(book.author || 'Unknown author')}</p><a class="read-button" href="reader.html?id=${encodeURIComponent(book.id || book.bookId || '')}">Open book</a></div></article>`).join('');
+      }
+      search.addEventListener('input', render);
+      category.addEventListener('change', render);
+      (async () => {
+        try {
+          const response = await fetch('data/catalog.json', { cache: 'no-store' });
+          if (!response.ok) throw new Error('Catalog unavailable');
+          const data = await response.json();
+          books = Array.isArray(data) ? data : Array.isArray(data.books) ? data.books : [];
+          try { localStorage.setItem('dbl:catalog-cache', JSON.stringify(books)); } catch (_) { /* storage may be disabled */ }
+        } catch (_) {
+          try { const cached = JSON.parse(localStorage.getItem('dbl:catalog-cache') || '[]'); books = Array.isArray(cached) ? cached : []; } catch (_) { books = []; }
+        }
+        [...new Set(books.map((book) => book.category).filter(Boolean))].sort().forEach((value) => category.add(new Option(value, value)));
+        render();
+      })();
+    })();
+  </script>
+</body>
 </html>

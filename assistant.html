@@ -1,111 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Master Assistant Console</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/css/main.css" />
-  </head>
-  <body class="app-shell">
-    <header class="top-nav">
-      <div class="container nav-inner">
-        <a href="index.html" class="brand-mark">
-          <span class="brand-icon">📚</span>
-          <span>Digital Book Library</span>
-        </a>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="index.html">Library</a>
-          <a href="creator.html">Creator</a>
-          <a href="dashboard.html">Dashboard</a>
-          <a href="assistant.html" class="active">Assistant</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="container py-8">
-      <section class="assistant-layout glass-card">
-        <div class="assistant-sidebar">
-          <div class="sidebar-header">
-            <p class="eyebrow">61-bot system</p>
-            <h1>Assistant Console</h1>
-          </div>
-          <div class="bot-list">
-            <div class="bot-pill online">BOT-01 → BOT-30</div>
-            <div class="bot-pill online">BOT-31 → BOT-60</div>
-            <div class="bot-pill online">BOT-61</div>
-          </div>
-          <div class="assistant-status">
-            <span class="live-dot"></span>
-            System online
-          </div>
-        </div>
-
-        <div class="assistant-chat-panel">
-          <div class="chat-header">
-            <div>
-              <p class="eyebrow">Conversation</p>
-              <h2>Master assistant</h2>
-            </div>
-            <button id="clearChat" class="secondary-btn small">Clear</button>
-          </div>
-
-          <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-
-          <form id="chatForm" class="chat-form">
-            <input id="chatInput" type="text" placeholder="Ask about books, stats, or help..." autocomplete="off" />
-            <button type="submit" class="primary-btn">Send</button>
-          </form>
-        </div>
-      </section>
-    </main>
-
-    <script src="assets/js/bot-engine-part1.js"></script>
-    <script src="assets/js/bot-engine-part2.js"></script>
-    <script src="assets/js/complete-bot-engine.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const chatMessages = document.getElementById('chatMessages');
-        const chatForm = document.getElementById('chatForm');
-        const chatInput = document.getElementById('chatInput');
-        const clearChat = document.getElementById('clearChat');
-        const engine = window.MasterBotEngine ? new window.MasterBotEngine() : (window.completeBotEngine || null);
-
-        const appendMessage = (role, text) => {
-          const item = document.createElement('div');
-          item.className = `chat-message ${role}`;
-          item.textContent = text;
-          chatMessages.appendChild(item);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-
-        appendMessage('assistant', 'Hello! I can help you discover books, check reading stats, and explain library commands. Try /help or ask “hello”.');
-
-        clearChat?.addEventListener('click', () => {
-          chatMessages.innerHTML = '';
-          appendMessage('assistant', 'Chat cleared. Ready for a new request.');
-        });
-
-        chatForm?.addEventListener('submit', async (event) => {
-          event.preventDefault();
-          const rawValue = chatInput.value.trim();
-          if (!rawValue) return;
-          appendMessage('user', rawValue);
-          chatInput.value = '';
-
-          let response = 'I can help with discovery, stats, and reading flow.';
-          if (engine && typeof engine.handleInput === 'function') {
-            const result = await engine.handleInput(rawValue, { source: 'assistant.html' });
-            response = result && result.message ? result.message : response;
-          } else {
-            response = rawValue.toLowerCase().includes('hello') || rawValue.toLowerCase().includes('hi')
-              ? 'Hello! I’m your digital library assistant. How can I help today?'
-              : response;
-          }
-
-          appendMessage('assistant', response);
-        });
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101b1c"><title>Assistant | Open Shelf</title><link rel="stylesheet" href="assets/css/main.css"><script src="assets/js/complete-bot-engine.js"></script></head>
+<body>
+  <header class="top-nav"><nav class="container nav-inner" aria-label="Main navigation"><a class="brand-mark" href="index.html"><span class="brand-icon" aria-hidden="true">OS</span><span>Open Shelf</span></a><div class="nav-links"><a href="index.html">Library</a><a href="creator.html">Creator</a><a href="reader.html">Reader</a><a href="dashboard.html">Dashboard</a><a class="active" aria-current="page" href="assistant.html">Assistant</a></div></nav></header>
+  <main class="container page"><section class="page-heading"><div><p class="kicker">Local reading companion</p><h1>Ask the library.</h1><p>Search your collection, check local activity, or run a named bot.</p></div><span class="assistant-status"><span class="live-dot" aria-hidden="true"></span>61 bots available</span></section>
+    <section class="panel assistant-shell"><aside class="assistant-rail"><p class="kicker">Bot network</p><h2>One local orchestrator</h2><p class="muted">Try a direct command like <code>/search history</code> or <code>/bot-61</code>.</p><div id="bot-grid" class="bot-grid" aria-label="Bot IDs"></div></aside><div class="chat-area"><div id="chat-feed" class="chat-feed" aria-live="polite" aria-label="Conversation"></div><form id="chat-form" class="chat-composer"><label class="sr-only" for="chat-input">Message the assistant</label><input id="chat-input" autocomplete="off" maxlength="500" placeholder="Ask something or enter a command…"><button class="primary-btn" type="submit" aria-label="Send message">Send</button></form></div></section>
+  </main>
+  <script>
+    (() => {
+      const engine = window.completeBotEngine;
+      const feed = document.querySelector('#chat-feed');
+      const form = document.querySelector('#chat-form');
+      const input = document.querySelector('#chat-input');
+      const historyKey = 'dbl:assistant-history';
+      function append(role, text) { const bubble = document.createElement('div'); bubble.className = `chat-bubble ${role}`; bubble.textContent = text; feed.append(bubble); feed.scrollTop = feed.scrollHeight; }
+      let history = [];
+      try { history = JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch (_) {}
+      if (Array.isArray(history)) history.slice(-30).forEach((item) => append(item.role, item.text)); else history = [];
+      if (!feed.children.length) append('assistant', 'Hello. I can search your library, check reading activity, or route a request to any of the 61 local bots.');
+      document.querySelector('#bot-grid').innerHTML = Array.from({ length: 61 }, (_, index) => `<span>BOT-${String(index + 1).padStart(2, '0')}</span>`).join('');
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault(); const text = input.value.trim(); if (!text) return;
+        input.value = ''; append('user', text); history.push({ role: 'user', text, at: Date.now() });
+        const reply = await engine.processQuery(text); if (reply) { const response = typeof reply === 'string' ? reply : reply.message; append('assistant', response); history.push({ role: 'assistant', text: response, at: Date.now() }); }
+        history = history.slice(-60); try { localStorage.setItem(historyKey, JSON.stringify(history)); } catch (_) {}
       });
-    </script>
-  </body>
+    })();
+  </script>
+</body>
 </html>

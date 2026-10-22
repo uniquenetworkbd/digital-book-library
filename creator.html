@@ -1,197 +1,88 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Creator Studio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/css/main.css" />
-  </head>
-  <body class="app-shell">
-    <header class="top-nav">
-      <div class="container nav-inner">
-        <a href="index.html" class="brand-mark">
-          <span class="brand-icon">📚</span>
-          <span>Digital Book Library</span>
-        </a>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="index.html">Library</a>
-          <a href="creator.html" class="active">Creator</a>
-          <a href="dashboard.html">Dashboard</a>
-          <a href="assistant.html">Assistant</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="container py-8">
-      <section class="page-header glass-card mb-6">
-        <div>
-          <p class="eyebrow">Authoring suite</p>
-          <h1>Creator Studio</h1>
-        </div>
-        <div class="status-pill success">Auto-save enabled</div>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101b1c">
+  <title>Creator | Open Shelf</title><link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <header class="top-nav"><nav class="container nav-inner" aria-label="Main navigation"><a class="brand-mark" href="index.html"><span class="brand-icon" aria-hidden="true">OS</span><span>Open Shelf</span></a><div class="nav-links"><a href="index.html">Library</a><a class="active" aria-current="page" href="creator.html">Creator</a><a href="reader.html">Reader</a><a href="dashboard.html">Dashboard</a><a href="assistant.html">Assistant</a></div></nav></header>
+  <main class="container page">
+    <section class="page-heading"><div><p class="kicker">Authoring suite</p><h1>Make room<br>for a new story.</h1><p>Shape your metadata and chapters, save a local draft, then prepare a publication package.</p></div><span id="save-state" class="status-pill">Draft ready</span></section>
+    <div class="split">
+      <section class="panel panel-pad"><p class="kicker">Book details</p><form id="book-form" class="form-grid">
+        <label>Title<input id="title" name="title" required maxlength="140" placeholder="A working title"></label>
+        <label>Author<input id="author" name="author" maxlength="100" placeholder="Author name"></label>
+        <label>Category<input id="category" name="category" maxlength="60" placeholder="Fiction, history…"></label>
+        <label>Short description<textarea id="description" name="description" rows="4" maxlength="600" placeholder="A few lines about this book"></textarea></label>
+        <div class="form-actions"><button class="secondary-btn" type="button" id="add-chapter">Add chapter</button><button class="primary-btn" type="button" id="publish">Prepare publication</button></div>
+      </form></section>
+      <section class="panel panel-pad"><div class="section-heading" style="margin-top:0"><div><p class="kicker">Manuscript</p><h2 id="active-chapter-title">Chapter 1</h2></div><span id="chapter-count" class="muted">1 chapter</span></div>
+        <div id="chapter-list" aria-label="Chapters"></div><label class="field-wrap" for="chapter-title" style="margin:18px 0 10px">Chapter title<input id="chapter-title" maxlength="140" value="Chapter 1"></label><label class="field-wrap" for="chapter-content">Chapter text<textarea id="chapter-content" class="chapter-editor" rows="14" placeholder="Begin writing…"></textarea></label><p id="editor-status" class="status-line" role="status">Draft saves in this browser.</p>
       </section>
-
-      <div class="creator-layout">
-        <aside class="glass-card panel-stack">
-          <div class="panel-section">
-            <label class="field-wrap">
-              <span>Book title</span>
-              <input id="bookTitle" type="text" placeholder="My new story" />
-            </label>
-          </div>
-          <div class="panel-section">
-            <label class="field-wrap">
-              <span>Author</span>
-              <input id="bookAuthor" type="text" placeholder="Author name" />
-            </label>
-          </div>
-          <div class="panel-section">
-            <label class="field-wrap">
-              <span>Category</span>
-              <select id="bookCategory">
-                <option>Fiction</option>
-                <option>Technology</option>
-                <option>Science</option>
-                <option>History</option>
-                <option>Self Development</option>
-              </select>
-            </label>
-          </div>
-          <div class="panel-section">
-            <label class="field-wrap">
-              <span>Cover image</span>
-              <input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp" />
-            </label>
-            <img id="coverPreview" class="cover-preview hidden" alt="Cover preview" />
-          </div>
-          <div class="panel-section">
-            <button id="addChapter" class="primary-btn full-width">Add chapter</button>
-          </div>
-        </aside>
-
-        <section class="glass-card editor-panel">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Draft workspace</p>
-              <h2>Book editor</h2>
-            </div>
-            <div id="saveStatus" class="status-pill muted">Ready</div>
-          </div>
-
-          <div class="chapter-tools">
-            <div class="chapter-list-wrap">
-              <ul id="chapterList" class="chapter-list"></ul>
-            </div>
-            <div class="chapter-editor">
-              <label class="field-wrap">
-                <span>Chapter title</span>
-                <input id="chapterTitle" type="text" placeholder="Chapter title" />
-              </label>
-              <div class="format-actions">
-                <button type="button" data-format="bold">Bold</button>
-                <button type="button" data-format="italic">Italic</button>
-                <button type="button" data-format="h2">H2</button>
-                <button type="button" data-format="quote">Quote</button>
-              </div>
-              <textarea id="chapterContent" rows="18" placeholder="Write your chapter here..."></textarea>
-            </div>
-          </div>
-
-          <div class="action-row">
-            <button id="exportPdfButton" type="button" class="secondary-btn">Export PDF</button>
-            <button id="exportEpubButton" type="button" class="secondary-btn">Export EPUB</button>
-            <button id="publishButton" type="button" class="primary-btn">Publish package</button>
-          </div>
-        </section>
-      </div>
-    </main>
-
-    <div id="packageModal" class="modal hidden" aria-hidden="true">
-      <div class="modal-backdrop" data-close-modal="true"></div>
-      <div class="modal-panel glass-card">
-        <div class="modal-header">
-          <div>
-            <p class="eyebrow">Package output</p>
-            <h3>Publication package</h3>
-          </div>
-          <button id="closePackageModal" type="button" class="icon-close" aria-label="Close">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="toast success" id="packageToast">JSON generated successfully.</div>
-          <textarea id="packageOutput" readonly rows="18"></textarea>
-        </div>
-        <div class="modal-footer">
-          <button id="copyPackageBtn" type="button" class="secondary-btn">Copy JSON</button>
-          <button id="downloadPackageBtn" type="button" class="primary-btn">Download</button>
-        </div>
-      </div>
     </div>
-
-    <script type="module" src="assets/js/editor.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const modal = document.getElementById('packageModal');
-        const output = document.getElementById('packageOutput');
-        const downloadBtn = document.getElementById('downloadPackageBtn');
-        const copyBtn = document.getElementById('copyPackageBtn');
-        const closeBtn = document.getElementById('closePackageModal');
-        const publishBtn = document.getElementById('publishButton');
-
-        const showModal = (jsonObject) => {
-          output.value = JSON.stringify(jsonObject, null, 2);
-          modal.classList.remove('hidden');
-          modal.setAttribute('aria-hidden', 'false');
-        };
-
-        const hideModal = () => {
-          modal.classList.add('hidden');
-          modal.setAttribute('aria-hidden', 'true');
-        };
-
-        publishBtn?.addEventListener('click', () => {
-          const book = {
-            id: `book-${Date.now()}`,
-            title: document.getElementById('bookTitle')?.value || 'Untitled Book',
-            author: document.getElementById('bookAuthor')?.value || 'Unknown Author',
-            category: document.getElementById('bookCategory')?.value || 'Fiction',
-            coverImage: document.getElementById('coverPreview')?.src || '',
-            chapters: Array.from(document.querySelectorAll('.chapter-item')).map((item) => ({
-              title: item.dataset.title || 'Chapter',
-              content: item.dataset.content || ''
-            })),
-            publishedAt: new Date().toISOString()
-          };
-          showModal(book);
+  </main>
+  <section id="publication-modal" class="modal" hidden aria-labelledby="modal-title" aria-modal="true" role="dialog"><div class="modal-shade" data-close></div><div class="modal-dialog panel"><div class="section-heading" style="margin-top:0"><h2 id="modal-title">Publication package</h2><button class="secondary-btn" type="button" data-close aria-label="Close">Close</button></div><p class="muted">Review the book data, then copy it or download the JSON package.</p><textarea id="package-json" readonly aria-label="Publication JSON"></textarea><div class="form-actions" style="margin-top:12px"><button id="copy-package" class="secondary-btn" type="button">Copy JSON</button><button id="download-package" class="primary-btn" type="button">Download JSON</button></div><p id="publish-status" class="status-line" role="status"></p></div></section>
+  <script>
+    (() => {
+      const dbName = 'LibraryAuthoringDB';
+      const form = document.querySelector('#book-form');
+      const fields = ['title', 'author', 'category', 'description'];
+      const chapterTitle = document.querySelector('#chapter-title');
+      const chapterContent = document.querySelector('#chapter-content');
+      const saveState = document.querySelector('#save-state');
+      const modal = document.querySelector('#publication-modal');
+      let chapters = [{ title: 'Chapter 1', content: '' }];
+      let active = 0;
+      let timer;
+      const draftKey = 'draft-current';
+      function openDb() {
+        return new Promise((resolve, reject) => {
+          if (!('indexedDB' in window)) return reject(new Error('IndexedDB unavailable'));
+          const request = indexedDB.open(dbName, 2);
+          request.onupgradeneeded = () => { const db = request.result; ['drafts', 'chatHistory', 'bookmarks', 'readingStats'].forEach((store) => { if (!db.objectStoreNames.contains(store)) db.createObjectStore(store, { keyPath: 'id' }); }); };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
         });
-
-        closeBtn?.addEventListener('click', hideModal);
-        modal?.addEventListener('click', (event) => {
-          if (event.target.dataset.closeModal === 'true') hideModal();
-        });
-        copyBtn?.addEventListener('click', async () => {
-          try {
-            await navigator.clipboard.writeText(output.value);
-            const toast = document.getElementById('packageToast');
-            if (toast) {
-              toast.textContent = 'JSON copied to clipboard.';
-              toast.classList.add('visible');
-              setTimeout(() => toast.classList.remove('visible'), 2000);
-            }
-          } catch (error) {
-            console.error('Copy failed', error);
-          }
-        });
-        downloadBtn?.addEventListener('click', () => {
-          const blob = new Blob([output.value], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = 'library-package.json';
-          anchor.click();
-          URL.revokeObjectURL(url);
-        });
+      }
+      function payload() { return { id: draftKey, title: form.elements.title.value, author: form.elements.author.value, category: form.elements.category.value, description: form.elements.description.value, chapters, updatedAt: new Date().toISOString() }; }
+      function readActive() { if (chapters[active]) { chapters[active].title = chapterTitle.value; chapters[active].content = chapterContent.value; } }
+      function drawChapters() {
+        document.querySelector('#chapter-count').textContent = `${chapters.length} ${chapters.length === 1 ? 'chapter' : 'chapters'}`;
+        document.querySelector('#chapter-list').innerHTML = chapters.map((chapter, index) => `<div class="chapter-row"><button class="secondary-btn" type="button" data-chapter="${index}" aria-current="${index === active}">${String(index + 1).padStart(2, '0')} - ${String(chapter.title || 'Untitled').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])}</button><button class="secondary-btn" type="button" data-remove="${index}" aria-label="Delete chapter ${index + 1}" ${chapters.length === 1 ? 'disabled' : ''}>Remove</button></div>`).join('');
+      }
+      function activate(index) { readActive(); active = index; chapterTitle.value = chapters[index].title || ''; chapterContent.value = chapters[index].content || ''; document.querySelector('#active-chapter-title').textContent = chapterTitle.value || `Chapter ${index + 1}`; drawChapters(); }
+      async function save() {
+        readActive(); const draft = payload();
+        try { const db = await openDb(); await new Promise((resolve, reject) => { const tx = db.transaction('drafts', 'readwrite'); tx.objectStore('drafts').put(draft); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }); db.close(); }
+        catch (_) { try { localStorage.setItem(`dbl:${draftKey}`, JSON.stringify(draft)); } catch (_) {} }
+        saveState.textContent = 'Saved locally'; document.querySelector('#editor-status').textContent = `Saved ${new Date().toLocaleTimeString()}`;
+      }
+      function scheduleSave() { saveState.textContent = 'Saving…'; clearTimeout(timer); timer = setTimeout(save, 450); }
+      async function restore() {
+        let draft;
+        try { const db = await openDb(); draft = await new Promise((resolve) => { const request = db.transaction('drafts').objectStore('drafts').get(draftKey); request.onsuccess = () => resolve(request.result); request.onerror = () => resolve(null); }); db.close(); } catch (_) {}
+        if (!draft) { try { draft = JSON.parse(localStorage.getItem(`dbl:${draftKey}`) || 'null'); } catch (_) {} }
+        if (!draft) return;
+        fields.forEach((name) => { form.elements[name].value = draft[name] || ''; });
+        chapters = Array.isArray(draft.chapters) && draft.chapters.length ? draft.chapters : chapters;
+        activate(0);
+      }
+      document.querySelector('#add-chapter').addEventListener('click', () => { readActive(); chapters.push({ title: `Chapter ${chapters.length + 1}`, content: '' }); activate(chapters.length - 1); scheduleSave(); });
+      document.querySelector('#chapter-list').addEventListener('click', (event) => {
+        const select = event.target.closest('[data-chapter]'); const remove = event.target.closest('[data-remove]');
+        if (select) activate(Number(select.dataset.chapter));
+        if (remove && chapters.length > 1) { readActive(); const index = Number(remove.dataset.remove); chapters.splice(index, 1); activate(Math.min(active, chapters.length - 1)); scheduleSave(); }
       });
-    </script>
-  </body>
+      [...form.elements].forEach((element) => element.addEventListener('input', scheduleSave));
+      chapterTitle.addEventListener('input', () => { document.querySelector('#active-chapter-title').textContent = chapterTitle.value || `Chapter ${active + 1}`; drawChapters(); scheduleSave(); });
+      chapterContent.addEventListener('input', scheduleSave);
+      document.querySelector('#publish').addEventListener('click', () => { if (!form.reportValidity()) return; readActive(); document.querySelector('#package-json').value = JSON.stringify({ ...payload(), id: `book-${Date.now()}`, schemaVersion: 1 }, null, 2); modal.hidden = false; document.querySelector('#publish-status').textContent = ''; modal.querySelector('[data-close]').focus(); });
+      modal.addEventListener('click', (event) => { if (event.target.matches('[data-close]')) modal.hidden = true; });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') modal.hidden = true; });
+      document.querySelector('#copy-package').addEventListener('click', async () => { try { await navigator.clipboard.writeText(document.querySelector('#package-json').value); document.querySelector('#publish-status').textContent = 'Copied to clipboard.'; } catch (_) { document.querySelector('#package-json').select(); document.querySelector('#publish-status').textContent = 'Select and copy the JSON above.'; } });
+      document.querySelector('#download-package').addEventListener('click', () => { const blob = new Blob([document.querySelector('#package-json').value], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = Object.assign(document.createElement('a'), { href: url, download: `${(form.title.value || 'book').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json` }); link.click(); URL.revokeObjectURL(url); document.querySelector('#publish-status').textContent = 'Publication package downloaded.'; });
+      restore().then(drawChapters);
+    })();
+  </script>
+</body>
 </html>

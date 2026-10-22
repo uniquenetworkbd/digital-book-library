@@ -1,67 +1,69 @@
-/* Digital Book Library Dashboard Metrics */
-(function () {
+(() => {
   'use strict';
 
-  function safeJsonParse(value, fallback) {
+  const databaseName = 'LibraryAuthoringDB';
+  const storeNames = ['drafts', 'chatHistory', 'bookmarks', 'readingStats'];
+  const element = (id) => document.getElementById(id);
+  const safeParse = (value, fallback) => { try { return value ? JSON.parse(value) : fallback; } catch (_) { return fallback; } };
+
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) return reject(new Error('IndexedDB unavailable'));
+      const request = indexedDB.open(databaseName, 2);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        storeNames.forEach((name) => { if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath: 'id' }); });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Could not open local database'));
+      request.onblocked = () => reject(new Error('Database upgrade is blocked by another tab'));
+    });
+  }
+
+  function readStore(db, name) {
+    return new Promise((resolve) => {
+      if (!db.objectStoreNames.contains(name)) return resolve([]);
+      const request = db.transaction(name, 'readonly').objectStore(name).getAll();
+      request.onsuccess = () => resolve(Array.isArray(request.result) ? request.result : []);
+      request.onerror = () => resolve([]);
+    });
+  }
+
+  function localMetrics() {
+    const catalog = safeParse(localStorage.getItem('dbl:catalog-cache'), []);
+    const stats = safeParse(localStorage.getItem('reading-stats'), []);
+    const draft = safeParse(localStorage.getItem('dbl:draft-current'), null);
+    const minutes = Array.isArray(stats) ? stats.reduce((sum, item) => sum + (Number(item.minutes || item.readingTimeMinutes) || 0), 0) : 0;
+    return { catalogCount: Array.isArray(catalog) ? catalog.length : 0, draftCount: draft ? 1 : 0, bookmarks: 0, sessions: Array.isArray(stats) ? stats.length : 0, minutes, recent: Array.isArray(stats) ? stats : [] };
+  }
+
+  function paint(metrics, dbVersion) {
+    element('metric-books').textContent = metrics.catalogCount;
+    element('metric-drafts').textContent = metrics.draftCount;
+    element('metric-bookmarks').textContent = metrics.bookmarks;
+    element('metric-sessions').textContent = metrics.sessions;
+    element('reading-minutes').textContent = `${metrics.minutes} ${metrics.minutes === 1 ? 'minute' : 'minutes'} recorded`;
+    element('storage-state').textContent = `IndexedDB ${dbVersion} · local`;
+    element('db-version').textContent = `LibraryAuthoringDB schema ${dbVersion}; metrics are read-only.`;
+    const recent = [...metrics.recent].sort((a, b) => String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || ''))).slice(0, 5);
+    element('recent-reading').className = recent.length ? '' : 'empty-state';
+    element('recent-reading').innerHTML = recent.length ? recent.map((item) => `<div class="chapter-row"><span>${String(item.title || item.bookTitle || item.bookId || 'Reading session').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])}</span><span class="muted">${Number(item.minutes || item.readingTimeMinutes) || 0} min</span></div>`).join('') : 'Reading activity will appear here when you use the Reader.';
+  }
+
+  async function refresh() {
+    const fallback = localMetrics();
     try {
-      const parsed = JSON.parse(value || 'null');
-      return parsed ?? fallback;
-    } catch (_error) {
-      return fallback;
+      const db = await openDatabase();
+      const [drafts, bookmarks, stats] = await Promise.all(storeNames.map((name) => readStore(db, name)));
+      const metrics = { ...fallback, draftCount: drafts.length || fallback.draftCount, bookmarks: bookmarks.length, sessions: stats.length || fallback.sessions, minutes: stats.reduce((sum, item) => sum + (Number(item.minutes || item.readingTimeMinutes) || 0), 0) || fallback.minutes, recent: stats.length ? stats : fallback.recent };
+      paint(metrics, db.version); db.close();
+    } catch (_) {
+      element('storage-state').textContent = 'Local storage fallback';
+      paint(fallback, 'unavailable');
     }
   }
 
-  function numericValue(value, fallback = 0) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
-  function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.textContent = value;
-    }
-  }
-
-  function getReadingStats() {
-    const readingStat = safeJsonParse(localStorage.getItem('dbl_reading_stat'), {});
-    const minutes = numericValue(readingStat.minutes || readingStat.readMinutes || 0, 0);
-    return {
-      hours: (minutes / 60).toFixed(1),
-      drafts: safeJsonParse(localStorage.getItem('dbl_drafts'), []).length,
-      bookmarks: safeJsonParse(localStorage.getItem('dbl_bookmarks'), []).length,
-      chat: safeJsonParse(localStorage.getItem('dbl_bot_logs'), []).length
-    };
-  }
-
-  function drawTrendChart() {
-    const el = document.getElementById('readingTrendChart');
-    if (!el) return;
-    const values = [32, 46, 38, 56, 72, 68];
-    el.innerHTML = values.map((value) => '<span style="height:' + value + '%"></span>').join('');
-  }
-
-  function drawCategoryChart() {
-    const el = document.getElementById('categoryChart');
-    if (!el) return;
-    const values = [76, 54, 44, 36];
-    el.innerHTML = values.map((value) => '<span style="height:' + value + '%"></span>').join('');
-  }
-
-  async function updateMetrics() {
-    const stats = getReadingStats();
-    setText('readingHours', stats.hours + 'h');
-    setText('draftCount', String(stats.drafts));
-    setText('bookmarkCount', String(stats.bookmarks));
-    setText('chatLogCount', String(stats.chat));
-
-    const totalBooks = safeJsonParse(localStorage.getItem('dbl_library_catalog'), []).length || 230;
-    setText('totalBooksMetric', String(totalBooks));
-    setText('readingHoursMetric', stats.hours + 'h');
-    setText('streakMetric', '12 days');
-    drawTrendChart();
-    drawCategoryChart();
-  }
-
-  document.addEventListener('DOMContentLoaded', updateMetrics);
+  refresh();
+  window.addEventListener('storage', refresh);
+  window.addEventListener('focus', refresh);
 })();

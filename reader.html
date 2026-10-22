@@ -1,62 +1,66 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Reader view for the digital book library" />
-    <title>Reader View</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/css/main.css" />
-  </head>
-  <body class="app-shell">
-    <header class="top-nav">
-      <div class="container nav-inner">
-        <a href="index.html" class="brand-mark">
-          <span class="brand-icon">📚</span>
-          <span>Digital Book Library</span>
-        </a>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="index.html">Library</a>
-          <a href="creator.html">Creator</a>
-          <a href="dashboard.html">Dashboard</a>
-          <a href="assistant.html">Assistant</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="container reader-page py-8">
-      <section class="reader-shell glass-card">
-        <aside class="reader-sidebar glass-panel">
-          <div class="sidebar-header">
-            <p class="eyebrow">Reader</p>
-            <h1>Table of contents</h1>
-          </div>
-          <ul id="tocList" class="toc-list"></ul>
-          <div class="saved-items-wrap">
-            <h3>Saved</h3>
-            <div id="savedItems" class="saved-items"></div>
-          </div>
-        </aside>
-
-        <article class="reader-main">
-          <div class="reader-toolbar">
-            <div class="toolbar-group">
-              <button id="previousChapter" type="button">Previous</button>
-              <button id="nextChapter" type="button">Next</button>
-            </div>
-            <div class="toolbar-group">
-              <button id="fontDecrease" type="button">A-</button>
-              <button id="fontIncrease" type="button">A+</button>
-              <button id="bookmarkButton" type="button">Bookmark</button>
-            </div>
-          </div>
-
-          <div id="readerStatus" class="reader-status">Loading chapter…</div>
-          <div id="chapterContent" class="chapter-content"></div>
-        </article>
-      </section>
-    </main>
-
-    <script type="module" src="assets/js/reader.js"></script>
-  </body>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101b1c"><title>Reader | Open Shelf</title><link rel="stylesheet" href="assets/css/main.css"></head>
+<body>
+  <header class="top-nav"><nav class="container nav-inner" aria-label="Main navigation"><a class="brand-mark" href="index.html"><span class="brand-icon" aria-hidden="true">OS</span><span>Open Shelf</span></a><div class="nav-links"><a href="index.html">Library</a><a href="creator.html">Creator</a><a class="active" aria-current="page" href="reader.html">Reader</a><a href="dashboard.html">Dashboard</a><a href="assistant.html">Assistant</a></div></nav></header>
+  <main class="container page">
+    <div class="page-heading"><div><p class="kicker">Reading room</p><h1 id="book-title">Your next chapter.</h1><p id="book-byline">Choose a book from your library to begin.</p></div><a class="secondary-btn" href="index.html">Back to library</a></div>
+    <div class="reader-tools"><button id="font-down" class="secondary-btn" type="button" aria-label="Decrease text size">A−</button><button id="font-up" class="secondary-btn" type="button" aria-label="Increase text size">A+</button><button id="bookmark" class="secondary-btn" type="button">Save bookmark</button><span id="reader-status" class="reading-copy" role="status"></span></div>
+    <div class="reader-columns"><aside class="panel reader-toc"><p class="kicker">Contents</p><div id="toc"><p class="muted">Chapter list will appear here.</p></div></aside><section class="panel reader-content"><div class="section-heading" style="margin-top:0"><h2 id="chapter-title">No book selected</h2><span id="chapter-progress" class="reading-copy"></span></div><article id="chapter-text">Open a book from the library, or publish your own from Creator.</article><div class="form-actions" style="margin-top:28px;justify-content:space-between"><button id="previous" class="secondary-btn" type="button">← Previous</button><button id="next" class="primary-btn" type="button">Next chapter →</button></div></section></div>
+  </main>
+  <script>
+    (() => {
+      const dbName = 'LibraryAuthoringDB'; const params = new URLSearchParams(location.search); const bookId = params.get('id');
+      let book = null; let chapters = []; let current = 0; let fontSize = Number(localStorage.getItem('dbl:reader-font-size')) || 19; const sessionId = `reading-${bookId || 'none'}-${Date.now()}`; const sessionStarted = Date.now();
+      const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+      function openDb() { return new Promise((resolve, reject) => { const request = indexedDB.open(dbName, 2); request.onupgradeneeded = () => { const db = request.result; ['drafts', 'chatHistory', 'bookmarks', 'readingStats'].forEach((name) => { if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath: 'id' }); }); }; request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); }
+      async function saveReadingActivity() {
+        if (!bookId || !book) return;
+        const minutes = Math.floor((Date.now() - sessionStarted) / 60000);
+        const record = { id: sessionId, bookId, bookTitle: book.title || 'Untitled', minutes, readingTimeMinutes: minutes, chapterIndex: current, updatedAt: new Date().toISOString() };
+        try { const stored = JSON.parse(localStorage.getItem('reading-stats') || '[]'); const records = Array.isArray(stored) ? stored.filter((item) => item.id !== sessionId) : []; records.push(record); localStorage.setItem('reading-stats', JSON.stringify(records.slice(-100))); } catch (_) {}
+        try { const db = await openDb(); await new Promise((resolve, reject) => { const tx = db.transaction('readingStats', 'readwrite'); tx.objectStore('readingStats').put(record); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }); db.close(); } catch (_) {}
+      }
+      function render() {
+        const chapter = chapters[current]; if (!chapter) return;
+        document.querySelector('#chapter-title').textContent = chapter.title || `Chapter ${current + 1}`;
+        document.querySelector('#chapter-text').textContent = chapter.content || chapter.text || 'This chapter has no text yet.';
+        document.querySelector('#chapter-text').style.fontSize = `${fontSize}px`;
+        document.querySelector('#chapter-progress').textContent = `${current + 1} / ${chapters.length}`;
+        document.querySelector('#previous').disabled = current === 0; document.querySelector('#next').disabled = current >= chapters.length - 1;
+        document.querySelectorAll('[data-index]').forEach((button) => button.setAttribute('aria-current', String(Number(button.dataset.index) === current)));
+        try { localStorage.setItem('dbl:last-reading', JSON.stringify({ bookId, chapterIndex: current, updatedAt: new Date().toISOString() })); } catch (_) {}
+      }
+      async function load() {
+        if (!bookId) { document.querySelector('#reader-status').textContent = 'Select a title from the library to start reading.'; return; }
+        try {
+          const response = await fetch('data/catalog.json', { cache: 'no-store' }); const catalog = response.ok ? await response.json() : [];
+          const entry = (Array.isArray(catalog) ? catalog : catalog.books || []).find((item) => String(item.id) === bookId);
+          if (entry) { const path = entry.file || entry.path || `data/books/${bookId}.json`; const bookResponse = await fetch(path); if (bookResponse.ok) book = await bookResponse.json(); }
+        } catch (_) {}
+        if (!book) { try { book = JSON.parse(localStorage.getItem(`dbl:book:${bookId}`) || 'null'); } catch (_) {} }
+        if (!book) { document.querySelector('#reader-status').textContent = 'This book is not available in the local catalog.'; return; }
+        chapters = Array.isArray(book.chapters) ? book.chapters : [];
+        document.querySelector('#book-title').textContent = book.title || 'Untitled'; document.querySelector('#book-byline').textContent = [book.author, book.category].filter(Boolean).join(' / ');
+        document.querySelector('#toc').innerHTML = chapters.length ? chapters.map((chapter, index) => `<button type="button" data-index="${index}" aria-current="false">${esc(chapter.title || `Chapter ${index + 1}`)}</button>`).join('') : '<p class="muted">No chapters in this book yet.</p>';
+        document.querySelector('#toc').addEventListener('click', (event) => { const button = event.target.closest('[data-index]'); if (button) { current = Number(button.dataset.index); render(); } });
+        render(); saveReadingActivity();
+      }
+      document.querySelector('#previous').addEventListener('click', () => { current = Math.max(0, current - 1); render(); });
+      document.querySelector('#next').addEventListener('click', () => { current = Math.min(chapters.length - 1, current + 1); render(); });
+      document.querySelector('#font-down').addEventListener('click', () => { fontSize = Math.max(15, fontSize - 1); localStorage.setItem('dbl:reader-font-size', fontSize); render(); });
+      document.querySelector('#font-up').addEventListener('click', () => { fontSize = Math.min(30, fontSize + 1); localStorage.setItem('dbl:reader-font-size', fontSize); render(); });
+      document.querySelector('#bookmark').addEventListener('click', async () => {
+        const record = { id: `bookmark-${bookId}-${current}`, bookId, chapterIndex: current, title: chapters[current]?.title || '', createdAt: new Date().toISOString() };
+        try { const db = await openDb(); await new Promise((resolve, reject) => { const tx = db.transaction('bookmarks', 'readwrite'); tx.objectStore('bookmarks').put(record); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }); db.close(); document.querySelector('#reader-status').textContent = 'Bookmark saved in this browser.'; }
+        catch (_) { localStorage.setItem(record.id, JSON.stringify(record)); document.querySelector('#reader-status').textContent = 'Bookmark saved to local storage.'; }
+      });
+      document.querySelector('#previous').addEventListener('click', saveReadingActivity);
+      document.querySelector('#next').addEventListener('click', saveReadingActivity);
+      window.addEventListener('pagehide', saveReadingActivity);
+      window.setInterval(saveReadingActivity, 60000);
+      load();
+    })();
+  </script>
+</body>
 </html>

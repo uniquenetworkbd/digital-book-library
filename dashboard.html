@@ -1,77 +1,16 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Library analytics dashboard and usage telemetry" />
-    <title>Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/css/main.css" />
-  </head>
-  <body class="app-shell">
-    <header class="top-nav">
-      <div class="container nav-inner">
-        <a href="index.html" class="brand-mark">
-          <span class="brand-icon">📚</span>
-          <span>Digital Book Library</span>
-        </a>
-        <nav class="nav-links" aria-label="Main navigation">
-          <a href="index.html">Library</a>
-          <a href="creator.html">Creator</a>
-          <a href="dashboard.html" class="active">Dashboard</a>
-          <a href="assistant.html">Assistant</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="container py-8">
-      <section class="page-header glass-card mb-6">
-        <div>
-          <p class="eyebrow">Insights</p>
-          <h1>Reading dashboard</h1>
-        </div>
-        <div class="status-pill success">Live telemetry</div>
-      </section>
-
-      <section class="stats-grid">
-        <article class="glass-card metric-card">
-          <span class="metric-label">Reading hours</span>
-          <strong id="readingHours">0h</strong>
-          <small>Updated from IndexedDB</small>
-        </article>
-        <article class="glass-card metric-card">
-          <span class="metric-label">Drafts</span>
-          <strong id="draftCount">0</strong>
-          <small>Saved in local drafts</small>
-        </article>
-        <article class="glass-card metric-card">
-          <span class="metric-label">Bookmarks</span>
-          <strong id="bookmarkCount">0</strong>
-          <small>Reader highlights and markers</small>
-        </article>
-        <article class="glass-card metric-card">
-          <span class="metric-label">Chat logs</span>
-          <strong id="chatLogCount">0</strong>
-          <small>Assistant interactions</small>
-        </article>
-      </section>
-
-      <section class="analytics-grid mt-6">
-        <div class="glass-card chart-card">
-          <div class="card-header">
-            <h2>Reading activity</h2>
-          </div>
-          <div id="readingTrendChart" class="mini-chart"></div>
-        </div>
-        <div class="glass-card chart-card">
-          <div class="card-header">
-            <h2>Library composition</h2>
-          </div>
-          <div id="categoryChart" class="mini-chart"></div>
-        </div>
-      </section>
-    </main>
-
-    <script src="assets/js/dashboard.js"></script>
-  </body>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101b1c"><title>Dashboard | Open Shelf</title><link rel="stylesheet" href="assets/css/main.css"></head>
+<body>
+  <header class="top-nav"><nav class="container nav-inner" aria-label="Main navigation"><a class="brand-mark" href="index.html"><span class="brand-icon" aria-hidden="true">OS</span><span>Open Shelf</span></a><div class="nav-links"><a href="index.html">Library</a><a href="creator.html">Creator</a><a href="reader.html">Reader</a><a class="active" aria-current="page" href="dashboard.html">Dashboard</a><a href="assistant.html">Assistant</a></div></nav></header>
+  <main class="container page">
+    <section class="page-heading"><div><p class="kicker">Your local activity</p><h1>A small view<br>of your reading life.</h1><p>Live counts from this browser’s library cache, IndexedDB, and local reading state.</p></div><span id="storage-state" class="status-pill" role="status">Connecting to local storage…</span></section>
+    <section class="metric-grid" aria-label="Library metrics">
+      <article class="panel metric-tile"><span>Books in catalog</span><strong id="metric-books">—</strong></article><article class="panel metric-tile"><span>Saved drafts</span><strong id="metric-drafts">—</strong></article><article class="panel metric-tile"><span>Bookmarks</span><strong id="metric-bookmarks">—</strong></article><article class="panel metric-tile"><span>Reading sessions</span><strong id="metric-sessions">—</strong></article>
+    </section>
+    <section class="section-heading"><h2>Recent reading</h2><span id="reading-minutes" class="muted">— minutes recorded</span></section>
+    <section class="panel panel-pad"><div id="recent-reading" class="empty-state">Reading activity will appear here when you use the Reader.</div><p id="db-version" class="footer-note"></p></section>
+  </main>
+  <script src="assets/js/dashboard.js" defer></script>
+</body>
 </html>
